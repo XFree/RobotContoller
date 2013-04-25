@@ -3,7 +3,9 @@
  * and open the template in the editor.
  */
 (function() {
+    //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
+    //fabric.util.extend(window,fabric.util);
     function bindOrientationEvents() {
         $(window).bind('deviceorientation', function(_oJQEvent) {
             var _oOriginalEvent = _oJQEvent.originalEvent,
@@ -29,55 +31,73 @@
         initialize: function(_options) {
             var _Object = this;
             _Object.callSuper('initialize', _options);
-            _Object.on('added', function(){
+            _Object.on('added', function() {
                 _Object.off('added', arguments.callee);
                 _Object._addedObject();
             });
         },
         _addedObject: function() {
             var _oCanvas = this.canvas;
-            
+
         }
     });
 
     var JoyStikApplication = createClass({
         _initEvents: function() {
             this._canvas.on('mouse:down', this.mouseDown.bind(this));
+            if (window.navigator.msPointerEnabled) {
+                fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerMove", this._canvas._onMouseMove);
+            }
             this._canvas.on('mouse:move', this.mouseMove.bind(this));
+
             this._canvas.on('mouse:up', this.mouseUp.bind(this));
+
+            $(this._canvas.upperCanvasEl).on("MSGestureHold", function(e) {
+                e.preventDefault();
+            }, false);
+            // Disables visual
+            $(this._canvas.upperCanvasEl).on("contextmenu", function(e) {
+                e.preventDefault();
+            }, false);
+            // Disables menu
         },
-                
         mouseDown: function(_oEvent) {
             this._observe = true;
-            this._canvas.fire('mouse:move',_oEvent);
+            this._canvas.fire('mouse:move', _oEvent);
         },
-               
-        mouseMove: function(_oEvent){
+        mouseMove: function(_oEvent) {
+            debugger;
             if (!this._observe) {
                 return;
             }
-            var _bMouseEvent = _oEvent.e instanceof MouseEvent,
-                _nX,
-                _nY,
-                _oPoint;
-            if (_bMouseEvent){
+
+            var _nX,
+                    _nY,
+                    _oPoint;
+
+            if (_oEvent.e instanceof window.MSPointerEvent) {
+                _nX = _oEvent.e.pageX,
+                        _nY = _oEvent.e.pageY;
+                //_oPoint = this._circle.toLocalPoint(new fabric.Point(_nX, _nY)); 
+
+            } else if (_oEvent.e instanceof MouseEvent) {
                 _nX = _oEvent.e.offsetX,
-                _nY = _oEvent.e.offsetY; 
-                _oPoint = new fabric.Point(_nX,_nY);
+                        _nY = _oEvent.e.offsetY;
+
             } else {
                 _nX = _oEvent.e.touches[0].pageX,
-                _nY = _oEvent.e.touches[0].pageY;  
-                //_oPoint = this._circle.toLocalPoint(new fabric.Point(_nX, _nY)); 
-                _oPoint = new fabric.Point(_nX, _nY);
+                        _nY = _oEvent.e.touches[0].pageY;
+
             }
-            this.moveShape(this._circle, _oPoint.x, _oPoint.y);
+            this.moveShape(this._circle, _nX, _nY);
         },
-                
-        mouseUp: function(_fMouseDownCallBack, _oEvent){
-         this._observe = false;
-         this.moveShape(this._circle, this._canvas.getCenter().left,this._canvas.getCenter().top, true);
+        mouseUp: function(_fMouseDownCallBack, _oEvent) {
+            if (this._observe) {
+                debugger;
+                this._observe = false;
+                this.moveShape(this._circle, this._canvas.getCenter().left, this._canvas.getCenter().top, true);
+            }
         },
-                
         adjustSize: function() {
             //Временный Хак.
             //TODO: незабыть написать автору фреймворка
@@ -86,7 +106,7 @@
 //            canvas.height = window.innerHeight;
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
-            if (!this._observe && this._circle){
+            if (!this._observe && this._circle) {
                 this._circle.center();
             }
         },
@@ -104,23 +124,23 @@
 //            this._canvas.setHeight(_height);
             this.adjustSize();
             this._circle = new MegaCircle({radius: 10, left: this._canvas.getCenter().left, top: this._canvas.getCenter().top, selectable: false, fill: 'rgb(100,100,200)'});
-              this._canvas.add(this._circle);
-            fabric.util.addListener(window, 'resize',this.adjustSize.bind(this));
+            this._canvas.add(this._circle);
+            fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
             //$(window).resize(this.adjustSize.bind(this));
             this._initEvents();
         },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
             if (_oShape) {
                 var _oCanvas = this._canvas;
-                
-                if (_bAnimate){
-                _oShape.animate({left: _x, top: _y}, {
-                    duration: 100,
-                    easing: fabric.util.ease.easeOutElastic,
-                    onChange: _oCanvas.renderAll.bind(_oCanvas)});
+
+                if (_bAnimate) {
+                    _oShape.animate({left: _x, top: _y}, {
+                        duration: 100,
+                        easing: fabric.util.ease.easeOutElastic,
+                        onChange: _oCanvas.renderAll.bind(_oCanvas)});
                 } else {
-                  _oShape.set({left: _x, top: _y});
-                 _oCanvas.renderAll();
+                    _oShape.set({left: _x, top: _y});
+                    _oCanvas.renderAll();
                 }
             }
         },
@@ -130,13 +150,18 @@
         stop: function() {
         }
     });
-$(function(){
-            (new JoyStikApplication()).start();
-            
-            
-        });
-        
-        //bindOrientationEvents();
-    
+    fabric.util.addListener(window, 'load', function() {
+        (new JoyStikApplication()).start();
+
+
+    })
+//    $(function() {
+//        (new JoyStikApplication()).start();
+//
+//
+//    });
+
+    //bindOrientationEvents();
+
 })();
         
