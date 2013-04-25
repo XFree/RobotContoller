@@ -43,19 +43,19 @@
     var JoyStikApplication = createClass({
         _initEvents: function() {
             this._canvas.on('mouse:down', this.mouseDown.bind(this));
+            this._canvas.on('mouse:move', this.mouseMove.bind(this));
+            this._canvas.on('mouse:up', this.mouseUp.bind(this));
         },
                 
         mouseDown: function(_oEvent) {
             this._observe = true;
-            var _oCanvas = this._canvas,
-                _fCallBack = this.mouseMove.bind(this);
-            _oCanvas.on('mouse:move', _fCallBack);
-            _oCanvas.fire('mouse:move',_oEvent);
-           _oCanvas.on('mouse:up',this.mouseUp.bind(this, _fCallBack));
-
+            this._canvas.fire('mouse:move',_oEvent);
         },
                
         mouseMove: function(_oEvent){
+            if (!this._observe) {
+                return;
+            }
             var _bMouseEvent = _oEvent.e instanceof MouseEvent,
                 _nX,
                 _nY,
@@ -75,9 +75,7 @@
                 
         mouseUp: function(_fMouseDownCallBack, _oEvent){
          this._observe = false;
-         this._canvas.off('mouse:up', arguments.callee);
-         this._canvas.off('mouse:move', _fMouseDownCallBack);
-         this.moveShape(this._circle,this._canvas.getCenter().left,this._canvas.getCenter().top, true);
+         this.moveShape(this._circle, this._canvas.getCenter().left,this._canvas.getCenter().top, true);
         },
                 
         adjustSize: function() {
@@ -107,7 +105,8 @@
             this.adjustSize();
             this._circle = new MegaCircle({radius: 10, left: this._canvas.getCenter().left, top: this._canvas.getCenter().top, selectable: false, fill: 'rgb(100,100,200)'});
               this._canvas.add(this._circle);
-            $(window).resize(this.adjustSize.bind(this));
+            fabric.util.addListener(window, 'resize',this.adjustSize.bind(this));
+            //$(window).resize(this.adjustSize.bind(this));
             this._initEvents();
         },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
@@ -117,7 +116,7 @@
                 if (_bAnimate){
                 _oShape.animate({left: _x, top: _y}, {
                     duration: 100,
-                    easing: fabric.util.ease.easeOutBounc,
+                    easing: fabric.util.ease.easeOutElastic,
                     onChange: _oCanvas.renderAll.bind(_oCanvas)});
                 } else {
                   _oShape.set({left: _x, top: _y});
@@ -131,8 +130,7 @@
         stop: function() {
         }
     });
-
-        $(function(){
+$(function(){
             (new JoyStikApplication()).start();
             
             
