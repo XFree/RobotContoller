@@ -6,11 +6,7 @@
         Purpose of the stylesheet follows.
 */
 
-root { 
-    display: block;
+.joystik { 
+    width: 100% !important;
+    height: 100% !important;
 }
-
-joystick_main {
-    width: 100%;
-}
-

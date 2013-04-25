@@ -6,29 +6,36 @@ More info: http://view.jquerymobile.com/1.3.0/
 -->
 <!DOCTYPE html> 
 <html> 
-	<head>
-        <meta charset="utf-8"/>
-	<title>Test Canvas</title> 
-	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <head>
+        <title>Test Canvas</title> 
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
         <link rel="stylesheet" href="css/jquery.mobile-1.3.0.min.css" />
         <link rel="stylesheet" href="css/joystic.css" />
         <script src="js/libs/jquery-1.9.1.js"></script>
         <script src="js/libs/jquery.mobile-1.3.0.min.js"></script>
-        <script src="js/libs/fabric.all.js"></script>
-        <script src="js/application.js"></script>
-</head> 
-<body> 
+                <script src="js/libs/fabric.all.js"></script>
+                <script src="js/application.js"></script>
+    </head> 
+    <body> 
 
-<div data-role="page">
-        <div id="page_1" data-role="content">	
-            <canvas id="main_canvas"></canvas>	
-<!--            <p>Hello world</p>
-                <div id="test_orientation">test_orientation</div>
-                <div id="test_motion">test_motion</div>
-                <div id="move_controller"></div>-->
-	</div><!-- /content -->
+        <div id="page_1" data-role="page">
+            <div data-role="content">	
+<!--                <div data-role="header"><h4>Copyright (c)</h4></div>-->
+                <canvas id="main_canvas" style="width: 100%; height: 100%"></canvas>
+<!--                <p>Hello world</p>-->
+                <!--            <p>Hello world</p>
+                                <div id="test_orientation">test_orientation</div>
+                                <div id="test_motion">test_motion</div>
+                                <div id="move_controller"></div>-->
+<!--                <div data-role="footer">
+                    <h4>Copyright (c)</h4>
+                </div>-->
+            </div><!-- /content -->
 
-</div><!-- /page -->
+        </div><!-- /page -->
 
-</body>
+    </body>
 </html>

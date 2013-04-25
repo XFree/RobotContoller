@@ -42,43 +42,70 @@
 
     var JoyStikApplication = createClass({
         _initEvents: function() {
-          this._canvas.on('mouse:down', this.observerShape.bind(this));
+          this._canvas.on('mouse:down', this.mouseDown.bind(this));
         },
                 
-        observerShape: function() {
+        mouseDown: function() {
+            this._observe = true;
             var _oCanvas = this._canvas,
                 _fCallBack = this.mouseMove.bind(this);
-            _oCanvas.on('mouse:move', _fCallBack);
-            _oCanvas.on('mouse:up',this.mouseUp.bind(this, _fCallBack));
+           _oCanvas.on('mouse:move', _fCallBack);
+           _oCanvas.on('mouse:up',this.mouseUp.bind(this, _fCallBack));
+
         },
                
         mouseMove: function(_oEvent){
-          this.moveShape(this._circle, _oEvent.e.offsetX, _oEvent.e.offsetY);
+            var _bMouseEvent = _oEvent.e instanceof MouseEvent,
+                _nX,
+                _nY,
+                _oPoint;
+            if (_bMouseEvent){
+                _nX = _oEvent.e.offsetX,
+                _nY = _oEvent.e.offsetY; 
+                _oPoint = new fabric.Point(_nX,_nY);
+            } else {
+                _nX = _oEvent.e.touches[0].pageX,
+                _nY = _oEvent.e.touches[0].pageY;  
+                //_oPoint = this._circle.toLocalPoint(new fabric.Point(_nX, _nY)); 
+                _oPoint = new fabric.Point(_nX, _nY);
+            }
+            this.moveShape(this._circle, _oPoint.x, _oPoint.y);
         },
                 
         mouseUp: function(_fMouseDownCallBack, _oEvent){
+         this._observe = false;
+         this._canvas.off('mouse:up', arguments.callee);
          this._canvas.off('mouse:move', _fMouseDownCallBack);
-         this.moveShape(this._circle,10,10, true)
+         this.moveShape(this._circle,this._canvas.getCenter().left,this._canvas.getCenter().top, true);
         },
                 
         adjustSize: function() {
             //Временный Хак.
             //TODO: незабыть написать автору фреймворка
+            //$('#page_1').css({height: '100%'});
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
+            if (!this._observe && this._circle){
+                this._circle.center();
+            }
         },
         getPreferredHeight: function() {
-            return $('#page_1').parent().height();
+            return $('body').height();
         },
         getPreferredWidth: function() {
-            return $('#page_1').parent().width();
+            return $('body').width();
         },
         initialize: function() {
-            this._canvas = new fabric.Canvas('main_canvas', {selection: false});
-            this._circle = new MegaCircle({radius: 10, top: 10, left: 10, selectable: false, fill: 'rgb(100,100,200)'});
+            var _width = $('#main_canvas').width(),
+                _height = $('#main_canvas').height();
+            this._canvas = new fabric.Canvas('main_canvas', {cointainerClass: 'joystik',selection: false});
+            this._canvas.setWidth(_width);
+            this._canvas.setHeight(_height);
+            //this.adjustSize();
+            this._circle = new MegaCircle({radius: 10, left: this._canvas.getCenter().left, top: this._canvas.getCenter().top, selectable: false, fill: 'rgb(100,100,200)'});
+            
             this._canvas.add(this._circle);
-            this.adjustSize();
-            $(window).resize(this.adjustSize);
+            //$(window).resize(this.adjustSize.bind(this));
             this._initEvents();
         },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
@@ -103,9 +130,13 @@
         }
     });
 
-    $(function() {
-        (new JoyStikApplication()).start();
+        $(function(){
+            (new JoyStikApplication()).start();
+            
+            
+        });
+        
         //bindOrientationEvents();
-    });
+    
 })();
         

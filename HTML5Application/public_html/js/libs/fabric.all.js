@@ -6141,7 +6141,6 @@ fabric.Shadow = fabric.util.createClass(/** @scope fabric.Shadow.prototype */ {
       for (var prop in options) {
         this[prop] = options[prop];
       }
-
       this.width = parseInt(this.lowerCanvasEl.width, 10) || 0;
       this.height = parseInt(this.lowerCanvasEl.height, 10) || 0;
 
