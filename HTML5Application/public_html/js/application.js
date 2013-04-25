@@ -65,8 +65,8 @@
             }
              fabric.util.addListener(this._canvas.upperCanvasEl, 'mousedown', this._canvas._onMouseDown);
              fabric.util.addListener(this._canvas.upperCanvasEl, 'mousemove', this._canvas._onMouseMove);
-             fabric.util.addListener(fabric.document, 'mouseup', this._onMouseUp);
-             fabric.util.addListener(fabric.document, 'mousemove', this._onMouseMove);
+             fabric.util.addListener(fabric.document, 'mouseup', this._canvas._onMouseUp);
+             fabric.util.addListener(fabric.document, 'mousemove', this._canvas._onMouseMove);
             
         },
         _initEvents: function() {
