@@ -45,12 +45,12 @@
             this._canvas.on('mouse:down', this.mouseDown.bind(this));
         },
                 
-        mouseDown: function() {
-
+        mouseDown: function(_oEvent) {
             this._observe = true;
             var _oCanvas = this._canvas,
                 _fCallBack = this.mouseMove.bind(this);
-           _oCanvas.on('mouse:move', _fCallBack);
+            _oCanvas.on('mouse:move', _fCallBack);
+            _oCanvas.fire('mouse:move',_oEvent);
            _oCanvas.on('mouse:up',this.mouseUp.bind(this, _fCallBack));
 
         },
@@ -84,6 +84,8 @@
             //Временный Хак.
             //TODO: незабыть написать автору фреймворка
             //$('#page_1').css({height: '100%'});
+//            canvas.width = window.innerWidth;
+//            canvas.height = window.innerHeight;
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
             if (!this._observe && this._circle){
@@ -91,10 +93,10 @@
             }
         },
         getPreferredHeight: function() {
-            return $(window).height();
+            return window.innerHeight;
         },
         getPreferredWidth: function() {
-            return $(window).width();
+            return window.innerWidth;
         },
         initialize: function() {
 //            var _width = $('body').width(),
