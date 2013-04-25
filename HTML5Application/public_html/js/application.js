@@ -63,9 +63,15 @@
                 fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerMove", this._canvas._onMouseMove);
                 fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerUp", this._canvas._onMouseUp);
             }
+             fabric.util.addListener(this._canvas.upperCanvasEl, 'mousedown', this._canvas._onMouseDown);
+             fabric.util.addListener(this._canvas.upperCanvasEl, 'mousemove', this._canvas._onMouseMove);
+             fabric.util.addListener(fabric.document, 'mouseup', this._onMouseUp);
+             fabric.util.addListener(fabric.document, 'mousemove', this._onMouseMove);
+            
         },
         _initEvents: function() {
             this._msTouchSupport();
+            //$(this._canvas.upperCanvasEl).on('mousedown', function(){debugger;});
             this._canvas.on('mouse:down', this.mouseDown.bind(this));
             this._canvas.on('mouse:move', this.mouseMove.bind(this));
             this._canvas.on('mouse:up', this.mouseUp.bind(this));
