@@ -1,0 +1,16 @@
+/* 
+    Document   : joystic
+    Created on : 25.04.2013, 11:44:09
+    Author     : Dmitriy.Stepanov
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+joystick_main {
+    width: 100%;
+}
+

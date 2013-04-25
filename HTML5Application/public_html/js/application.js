@@ -1,18 +1,10 @@
-/* 
+/*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
-var JoyStikApplication = atom.declare('JoyStikApplication');
-
-JoyStikApplication.MoveController = atom.declare('JoyStikApplication.MoveController', {
-    initialize: function(id) {
-        alert(id);
-    }});
-
-JoyStikApplication.prototype.initialize = function() {
-    this._moveController = new JoyStikApplication.MoveController(1);
-    $('#test_orientation').text('ready');
+var createClass = fabric.util.createClass,
+        createAccessors = fabric.util.createAccessors;
+function bindOrientationEvents() {
     $(window).bind('deviceorientation', function(_oJQEvent) {
         var _oOriginalEvent = _oJQEvent.originalEvent,
                 _oRotationRate = _oOriginalEvent;
@@ -30,8 +22,40 @@ JoyStikApplication.prototype.initialize = function() {
 
         $('#test_motion').text(_aRotationRate.join("\n"));
     });
-};
+}
+;
+
+
+var JoyStikApplication = createClass({
+    adjustSize: function() {
+        //Временный Хак.
+        //TODO: незабыть написать автору фреймворка
+        this._canvas.setHeight(this.getPreferredHeight());
+        this._canvas.setWidth(this.getPreferredWidth());
+    },
+    
+    getPreferredHeight: function(){
+      return $('#page_1').parent().height();
+    },
+            
+    getPreferredWidth: function(){
+      return $('#page_1').parent().width();
+    },
+    
+    initialize: function() {
+        this._canvas = new fabric.Canvas('main_canvas');
+        this._canvas.add(new fabric.Circle({width: 10, height: 10, radius: 10, x: 10, y: 10, selectable: true}));
+        this.adjustSize();
+        $(window).resize(this.adjustSize);
+    },
+    start: {
+    }
+});
+
+
+
 
 $(function() {
-    new JoyStikApplication();
+    var app = new JoyStikApplication();
+    //bindOrientationEvents();
 });
