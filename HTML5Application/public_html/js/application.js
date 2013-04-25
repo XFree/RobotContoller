@@ -43,15 +43,34 @@
     });
 
     var JoyStikApplication = createClass({
-        _initEvents: function() {
-            this._canvas.on('mouse:down', this.mouseDown.bind(this));
-            if (window.navigator.msPointerEnabled) {
-                fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerMove", this._canvas._onMouseMove);
-            }
-            this._canvas.on('mouse:move', this.mouseMove.bind(this));
+        _msTouchSupport: function() {
+//            MSPointerDown
+//            MSPointerMove
+//            MSPointerUp
+//            MSPointerOver
+//            MSPointerOut
+//            MSPointerHover
 
+//Событие MSGestureTap
+//Событие MSGestureHold
+//Событие MSGestureStart
+//Событие MSGestureChange
+//Событие MSGestureEnd
+//Событие MSInertiaStart
+            if (window.navigator.msPointerEnabled) {
+                fabric.util.addListener(this._canvas.upperCanvasEl, "MSGestureTap", this._canvas._onMouseDown);
+                fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerDown", this._canvas._onMouseDown);
+                fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerMove", this._canvas._onMouseMove);
+                fabric.util.addListener(this._canvas.upperCanvasEl, "MSPointerUp", this._canvas._onMouseUp);
+            }
+        },
+        _initEvents: function() {
+            this._msTouchSupport();
+            this._canvas.on('mouse:down', this.mouseDown.bind(this));
+            this._canvas.on('mouse:move', this.mouseMove.bind(this));
             this._canvas.on('mouse:up', this.mouseUp.bind(this));
 
+            $(this._canvas.upperCanvasEl).on("selectstart", function(e) { e.preventDefault(); }, false);
             $(this._canvas.upperCanvasEl).on("MSGestureHold", function(e) {
                 e.preventDefault();
             }, false);
@@ -66,7 +85,6 @@
             this._canvas.fire('mouse:move', _oEvent);
         },
         mouseMove: function(_oEvent) {
-            debugger;
             if (!this._observe) {
                 return;
             }
@@ -75,7 +93,7 @@
                     _nY,
                     _oPoint;
 
-            if (_oEvent.e instanceof window.MSPointerEvent) {
+            if (window.MSPointerEvent && _oEvent.e instanceof window.MSPointerEvent) {
                 _nX = _oEvent.e.pageX,
                         _nY = _oEvent.e.pageY;
                 //_oPoint = this._circle.toLocalPoint(new fabric.Point(_nX, _nY)); 
@@ -93,7 +111,6 @@
         },
         mouseUp: function(_fMouseDownCallBack, _oEvent) {
             if (this._observe) {
-                debugger;
                 this._observe = false;
                 this.moveShape(this._circle, this._canvas.getCenter().left, this._canvas.getCenter().top, true);
             }
