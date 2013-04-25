@@ -42,10 +42,11 @@
 
     var JoyStikApplication = createClass({
         _initEvents: function() {
-          this._canvas.on('mouse:down', this.mouseDown.bind(this));
+            this._canvas.on('mouse:down', this.mouseDown.bind(this));
         },
                 
         mouseDown: function() {
+
             this._observe = true;
             var _oCanvas = this._canvas,
                 _fCallBack = this.mouseMove.bind(this);
@@ -90,22 +91,21 @@
             }
         },
         getPreferredHeight: function() {
-            return $('body').height();
+            return $(window).height();
         },
         getPreferredWidth: function() {
-            return $('body').width();
+            return $(window).width();
         },
         initialize: function() {
-            var _width = $('#main_canvas').width(),
-                _height = $('#main_canvas').height();
-            this._canvas = new fabric.Canvas('main_canvas', {cointainerClass: 'joystik',selection: false});
-            this._canvas.setWidth(_width);
-            this._canvas.setHeight(_height);
-            //this.adjustSize();
+//            var _width = $('body').width(),
+//                _height = $('body').height();
+            this._canvas = new fabric.Canvas('main_canvas', {selection: false});
+//            this._canvas.setWidth(_width);
+//            this._canvas.setHeight(_height);
+            this.adjustSize();
             this._circle = new MegaCircle({radius: 10, left: this._canvas.getCenter().left, top: this._canvas.getCenter().top, selectable: false, fill: 'rgb(100,100,200)'});
-            
-            this._canvas.add(this._circle);
-            //$(window).resize(this.adjustSize.bind(this));
+              this._canvas.add(this._circle);
+            $(window).resize(this.adjustSize.bind(this));
             this._initEvents();
         },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
