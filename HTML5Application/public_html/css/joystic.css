@@ -5,11 +5,13 @@
     Description:
         Purpose of the stylesheet follows.
 */
+
 .disablePanZoom {
   -ms-touch-action: none; /* Disables all pan/zoom behaviors and fire pointer events in JavaScript instead. */
 }
 * { margin:0; padding:0; } /* to remove the top and left whitespace */
 html { 
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
     -ms-touch-action: none; /* Direct all pointer events to JavaScript code. */
   }
 html, body { 
