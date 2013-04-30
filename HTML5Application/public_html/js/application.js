@@ -14,7 +14,7 @@
     function isTarget(_oObject, _oEvent) {
         var _nX, _nY,
             _elementOffset = fabric.util.getElementOffset(_oObject.canvas.upperCanvasEl),
-            _objectOffser = {left: _elementOffset + }
+            _objectOffser = {left: _elementOffset}
     debugger;
         if (_oEvent.e instanceof MouseEvent || (window.MSPointerEvent && _oEvent.e instanceof window.MSPointerEvent)) {
                 _nX = _oEvent.e.pageX,
