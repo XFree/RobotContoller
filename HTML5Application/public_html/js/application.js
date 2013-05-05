@@ -151,9 +151,12 @@
             this._getCircle().bringToFront();
             this.canvas.renderAll();
             if (window.navigator.msPointerEnabled) {
-                $(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
-                $(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
-                $(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
+                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
+                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
+                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
+                $(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+                $(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+                
             } else {
                 $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
                 $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
@@ -184,27 +187,21 @@
             return this._circle;
         },
         _mouseDown: function(_oEvent) {
-            _oEvent.preventDefault();
+            //_oEvent.preventDefault();
             if (this.isTarget(_oEvent)) {
                 this._observe += 1;
                 this.mouseMove(_oEvent);
             }
         },
         _mouseMove: function(_oEvent) {
-            _oEvent.preventDefault();
+            //_oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
                     _oCoords = this.isTarget(_oEvent);
-            if (this._observe <= 0) {
-                return;
-            } else if (!_oCoords) {
-                this.mouseUp(_oEvent);
-                return;
-            }
-
-            this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
+            if (this._observe > 0 && _oCoords) {
+                this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
+            } 
         },
         _mouseUp: function(_oEvent) {
-
             if (this._observe > 0) {
                 this._observe -= 1;
                 if (this._observe <= 0) {
@@ -216,6 +213,21 @@
         moveShape: function(_oShape, _x, _y, _bAnimate) {
             if (_oShape) {
                 var _oCanvas = this.canvas;
+                var _oCanvasOffset = _oCanvas._offset,
+                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth()/2,
+                        _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
+                        _y1 = _oCanvasOffset.top + this.getTop() + + this.getHeight()/2,
+                        _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight()
+                var _nFullX = this.getWidth() / 200,
+                        _nFullY = this.getHeight() / 200,
+                        _nCurentPosX = _x - _x1,
+                        _nCurentPosY = _y - _y1,
+                        _nCoordX = (_nCurentPosX / _nFullX),
+                        _nCoordY = -(_nCurentPosY / _nFullY);
+                if (this._textField) {
+                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
+                }
+                
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
                         duration: 100,
@@ -225,19 +237,7 @@
                     _oShape.set({left: _x, top: _y});
                     _oCanvas.renderAll();
                 }
-                var _oCanvasOffset = _oCanvas._offset,
-                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth()/2,
-                        _y1 = _oCanvasOffset.top + this.getTop() + + this.getHeight()/2;
-                var _nFullX = this.getWidth() / 200,
-                        _nFullY = this.getHeight() / 200,
-                        _nCurentPosX = _x - _x1,
-                        _nCurentPosY = _y - _y1,
-                        _nCoordX = (_nCurentPosX / _nFullX),
-                        _nCoordY = -(_nCurentPosY / _nFullY);
-                if (this._textField) {
-                    this._textField.set({text: String(_nCoordX) + ' ' + String(_nCoordY)})
-                    _oCanvas.renderAll();
-                }
+                
             }
         }
     });
