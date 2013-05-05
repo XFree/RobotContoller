@@ -25,7 +25,7 @@
     function isTarget(_oObject, _oEvent) {
         var _oOriginalEvent = _oEvent.originalEvent,
                 _nX, _nY,
-                _elementOffset = $(_oObject.canvas.lowerCanvasEl).offset(),
+                _elementOffset = _oObject.canvas._offset,
                 _nOffsetObjectLeft = _elementOffset.left + _oObject.getLeft(),
                 _nOffsetObjectTop = _elementOffset.top + _oObject.getTop(),
                 _nOffsetObjectWidth = _nOffsetObjectLeft + _oObject.getWidth(),
@@ -95,6 +95,7 @@
             this.mouseDown = this._mouseDown.bind(this);
             this.mouseMove = this._mouseMove.bind(this);
             this.mouseUp = this._mouseUp.bind(this);
+            this.isTarget = isTarget.bind(this, this);
             if (!element) {
                 this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
             } else {
@@ -112,6 +113,8 @@
             };
             img.src = url;
         },
+                
+        
         _onCreate: function(_options, _fCallBack, element) {
             this.callSuper('initialize', element, _options);
             this.set({perPixelTargetFind: true,
@@ -126,6 +129,8 @@
                 _fCallBack(this);
             }
         },
+                
+        
         _addedObject: function() {
 
             //            MSPointerDown
@@ -180,7 +185,7 @@
         },
         _mouseDown: function(_oEvent) {
             _oEvent.preventDefault();
-            if (isTarget(this, _oEvent)) {
+            if (this.isTarget(_oEvent)) {
                 this._observe += 1;
                 this.mouseMove(_oEvent);
             }
@@ -188,7 +193,7 @@
         _mouseMove: function(_oEvent) {
             _oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
-                    _oCoords = isTarget(this, _oEvent);
+                    _oCoords = this.isTarget(_oEvent);
             if (this._observe <= 0) {
                 return;
             } else if (!_oCoords) {
