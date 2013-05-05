@@ -3,6 +3,13 @@
  * and open the template in the editor.
  */
 (function() {
+
+    function loadSvgObject(_oCanvas) {
+        fabric.loadSVGFromURL('js/img.svg', function(objects, options) {
+            var obj = fabric.util.groupSVGElements(objects, options);
+            _oCanvas.add(obj).renderAll();
+        })
+    }
     //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
     //fabric.util.extend(window,fabric.util);
@@ -85,6 +92,9 @@
     var SideManipulator = createClass(fabric.Image, {
         initialize: function(element, _options, _fCallBack) {
             this._observe = 0;
+            this.mouseDown = this._mouseDown.bind(this);
+            this.mouseMove = this._mouseMove.bind(this);
+            this.mouseUp = this._mouseUp.bind(this);
             if (!element) {
                 this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
             } else {
@@ -132,20 +142,21 @@
 //Событие MSGestureEnd
 //Событие MSInertiaStart
             this.canvas.add(this._getCircle());
+            //loadSvgObject(this.canvas);
             this._getCircle().bringToFront();
             this.canvas.renderAll();
             if (window.navigator.msPointerEnabled) {
-                $(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown.bind(this));
-                $(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove.bind(this));
-                $(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp.bind(this));
+                $(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
+                $(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
+                $(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
             } else {
-                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown.bind(this));
-                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove.bind(this));
-                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp.bind(this));
+                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
+                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
+                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
             }
-            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown.bind(this));
-            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove.bind(this));
-            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp.bind(this));
+            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
+            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
+            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
@@ -153,10 +164,10 @@
         },
         _getCircle: function() {
             if (!this._circle) {
-                this._circle = new fabric.Circle({radius: 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC' ,fill: 'rgb(100,100,200)'});
+                this._circle = new fabric.Circle({radius: 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
                 //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
                 this._circle.setGradient('fill', {
-                    x1: 4, y1: -2, r1: this._circle.get('radius')/10,
+                    x1: 4, y1: -2, r1: this._circle.get('radius') / 10,
                     x2: 0, y2: 0, r2: this._circle.get('radius'),
                     colorStops: {
                         '0': "CCCCFF",
@@ -167,14 +178,14 @@
             }
             return this._circle;
         },
-        mouseDown: function(_oEvent) {
+        _mouseDown: function(_oEvent) {
             _oEvent.preventDefault();
             if (isTarget(this, _oEvent)) {
                 this._observe += 1;
                 this.mouseMove(_oEvent);
             }
         },
-        mouseMove: function(_oEvent) {
+        _mouseMove: function(_oEvent) {
             _oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
                     _oCoords = isTarget(this, _oEvent);
@@ -187,7 +198,7 @@
 
             this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
         },
-        mouseUp: function(_oEvent) {
+        _mouseUp: function(_oEvent) {
 
             if (this._observe > 0) {
                 this._observe -= 1;
@@ -209,6 +220,19 @@
                     _oShape.set({left: _x, top: _y});
                     _oCanvas.renderAll();
                 }
+                var _oCanvasOffset = _oCanvas._offset,
+                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth()/2,
+                        _y1 = _oCanvasOffset.top + this.getTop() + + this.getHeight()/2;
+                var _nFullX = this.getWidth() / 200,
+                        _nFullY = this.getHeight() / 200,
+                        _nCurentPosX = _x - _x1,
+                        _nCurentPosY = _y - _y1,
+                        _nCoordX = (_nCurentPosX / _nFullX),
+                        _nCoordY = -(_nCurentPosY / _nFullY);
+                if (this._textField) {
+                    this._textField.set({text: String(_nCoordX) + ' ' + String(_nCoordY)})
+                    _oCanvas.renderAll();
+                }
             }
         }
     });
@@ -227,13 +251,15 @@
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
             this.adjustSize();
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
-            new SideManipulator(undefined, {left: 0, top: 0, width: 300, height: 300}, function(_Object) {
+            this._initTextField();
+            new SideManipulator(undefined, {left: 0, top: 0}, function(_Object) {
+                _Object.scaleToWidth(this._canvas.getWidth()/2);
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
 
             }.bind(this));
-            this._initTextField();
+
             this._initEvents();
 
         },
@@ -258,7 +284,7 @@
             // Disables menu
         },
         _initTextField: function() {
-            var text = new fabric.Text('', {fontSize: 15, left: 500, top: 500});
+            var text = new fabric.Text('', {fontSize: 15, left: 700, top: 500});
             text.originX = 'left';
             text.originY = 'top';
             this._canvas.add(text);
