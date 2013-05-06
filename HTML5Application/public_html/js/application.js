@@ -155,7 +155,7 @@
                 //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
                 //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
                 $(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
-                $(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
                 
             } else {
                 $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
@@ -165,6 +165,7 @@
             $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
             $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
             $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
+            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
