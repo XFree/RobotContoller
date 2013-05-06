@@ -18,6 +18,21 @@
     }
 
 
+    var _oMatchMedia = window.matchMedia("(orientation: portrait)");
+    function addOrientationChangeListener(_fListener, _oContext) {
+        if (typeof _fListener == 'function') {
+            _oMatchMedia.addListener(function(m) {
+                if (m.matches) {
+                    _fListener.call(_oContext, 'portrait'); // Changed to portrait
+                } else {
+                    _fListener.call(_oContext, 'landscape'); // Changed to landscape
+                }
+                ;
+            });
+        }
+    }
+
+
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         return _nX > tlX && _nX < brX && _nY > tlY && _nY < brY;
     }
@@ -89,18 +104,28 @@
     }
 
 
-    var SideManipulator = createClass(fabric.Image, {
-        initialize: function(element, _options, _fCallBack) {
+    var SideManipulator = createClass(fabric.Circle, {
+        //initialize: function(element, _options, _fCallBack) {
+        initialize: function(_options, _fCallBack) {
             this._observe = 0;
             this.mouseDown = this._mouseDown.bind(this);
             this.mouseMove = this._mouseMove.bind(this);
             this.mouseUp = this._mouseUp.bind(this);
+//            addOrientationChangeListener(function(_sOrientation){
+//            this.adjustSize();
+//               this.set('angle', (_sOrientation == 'landscape' ? 0 : 45)); 
+//               if (this.canvas){
+//                 this.canvas.renderAll();
+//               }
+               //this.set({originX: 'left', originY: 'top'}); 
+//            }, this);
             this.isTarget = isTarget.bind(this, this);
-            if (!element) {
-                this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
-            } else {
-                this._onCreate(_options, _fCallBack, element);
-            }
+//            if (!element) {
+//                this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
+//            } else {
+                //this._onCreate(_options, _fCallBack, element);
+                this._onCreate(_options, _fCallBack);
+            //}
         },
         _createElement: function(url, _fCallBack) {
             var img = fabric.document.createElement('img');
@@ -113,14 +138,19 @@
             };
             img.src = url;
         },
-                
-        
-        _onCreate: function(_options, _fCallBack, element) {
-            this.callSuper('initialize', element, _options);
-            this.set({perPixelTargetFind: true,
+        _onCreate: function(_options, _fCallBack) {
+            //this.callSuper('initialize', element, _options);
+            var _oDefault  = {perPixelTargetFind: true,
                 selectable: false,
                 originX: 'left',
-                originY: 'top'});
+                originY: 'top'};
+            $.extend(_oDefault,_options);
+            
+            this.callSuper('initialize', _oDefault);
+//            this.set({perPixelTargetFind: true,
+//                selectable: false,
+//                originX: 'left',
+//                originY: 'top'});
             this.on('added', function() {
                 this.off('added', arguments.callee);
                 this._addedObject();
@@ -129,8 +159,6 @@
                 _fCallBack(this);
             }
         },
-                
-        
         _addedObject: function() {
 
             //            MSPointerDown
@@ -146,6 +174,14 @@
 //Событие MSGestureChange
 //Событие MSGestureEnd
 //Событие MSInertiaStart
+//            this.setGradient('fill', {
+//                x1: 0, y1: 0, r1: 100,
+//                x2: 0, y2: 0, r2: 1000,
+//                opacity: 0.75,
+//                colorStops: {
+//                    '0': "green",
+//                    '1': "black"}
+//            });
             this.canvas.add(this._getCircle());
             //loadSvgObject(this.canvas);
             this._getCircle().bringToFront();
@@ -154,18 +190,19 @@
                 //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
                 //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
                 //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                $(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
                 //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
-                
+
             } else {
                 $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
                 $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
                 $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
             }
+
             $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
             $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
             $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
+            //$(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
@@ -188,21 +225,22 @@
             return this._circle;
         },
         _mouseDown: function(_oEvent) {
-            //_oEvent.preventDefault();
+            _oEvent.preventDefault();
             if (this.isTarget(_oEvent)) {
                 this._observe += 1;
                 this.mouseMove(_oEvent);
             }
         },
         _mouseMove: function(_oEvent) {
-            //_oEvent.preventDefault();
+            _oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
                     _oCoords = this.isTarget(_oEvent);
             if (this._observe > 0 && _oCoords) {
                 this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
-            } 
+            }
         },
         _mouseUp: function(_oEvent) {
+            _oEvent.preventDefault();
             if (this._observe > 0) {
                 this._observe -= 1;
                 if (this._observe <= 0) {
@@ -215,9 +253,9 @@
             if (_oShape) {
                 var _oCanvas = this.canvas;
                 var _oCanvasOffset = _oCanvas._offset,
-                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth()/2,
+                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth() / 2,
                         _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
-                        _y1 = _oCanvasOffset.top + this.getTop() + + this.getHeight()/2,
+                        _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
                         _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight()
                 var _nFullX = this.getWidth() / 200,
                         _nFullY = this.getHeight() / 200,
@@ -228,7 +266,7 @@
                 if (this._textField) {
                     this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
                 }
-                
+
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
                         duration: 100,
@@ -238,7 +276,7 @@
                     _oShape.set({left: _x, top: _y});
                     _oCanvas.renderAll();
                 }
-                
+
             }
         }
     });
@@ -255,17 +293,16 @@
 //          },
         initialize: function() {
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
-            this.adjustSize();
+
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
             this._initTextField();
-            new SideManipulator(undefined, {left: 0, top: 0}, function(_Object) {
-                _Object.scaleToWidth(this._canvas.getWidth()/2);
+            new SideManipulator({left: 0, top: 0, radius: 1, stroke: 'black'}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
+                this.adjustSize();
                 this._canvas.add(_Object);
 
             }.bind(this));
-
             this._initEvents();
 
         },
@@ -290,7 +327,7 @@
             // Disables menu
         },
         _initTextField: function() {
-            var text = new fabric.Text('', {fontSize: 15, left: 700, top: 500});
+            var text = new fabric.Text('', {fontSize: 15, left: 900, top: 500});
             text.originX = 'left';
             text.originY = 'top';
             this._canvas.add(text);
@@ -300,23 +337,25 @@
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
             if (this._sideManipulator) {
-                //this._sideManipulator.set({height: this.getPreferredHeight(), width: this.getPreferredWidth()});
+                this._sideManipulator.set({radius: ((this.getPreferredHeight() > this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth())/10).toFixed()});
+                debugger;
+               //this._sideManipulator.set({height: this.getPreferredHeight(), width: this.getPreferredWidth()});
                 //this._sideManipulator.scaleToHeight(this.getPreferredHeight());
                 //if (this._sideManipulator.getWidth() > this.getPreferredWidth()) {
                 //    this._sideManipulator.scaleToWidth(this.getPreferredWidth());
                 //}
-
+                
             }
             this._canvas.renderAll();
-//            if (!this._observe && this._sideManipulator) {
-//                this._sideManipulator.center();
-//            }
+
         },
         getPreferredHeight: function() {
-            return window.innerHeight;
+            return document.getElementById('joystik').clientHeight;
+            //return window.innerHeight;
         },
         getPreferredWidth: function() {
-            return window.innerWidth;
+            return document.getElementById('joystik').clientWidth;
+            //return window.innerWidth;
         },
         start: function() {
 
