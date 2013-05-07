@@ -68,7 +68,7 @@
 
 
     function bindOrientationEvents() {
-        return
+        return;
         $(window).bind('deviceorientation', function(_oJQEvent) {
             if (this._textField) {
                 var _oOriginalEvent = _oJQEvent.originalEvent,
@@ -105,59 +105,113 @@
 
 
     var SideManipulator = createClass(fabric.Circle, {
-        //initialize: function(element, _options, _fCallBack) {
         initialize: function(_options, _fCallBack) {
             this._observe = 0;
             this.mouseDown = this._mouseDown.bind(this);
             this.mouseMove = this._mouseMove.bind(this);
             this.mouseUp = this._mouseUp.bind(this);
-//            addOrientationChangeListener(function(_sOrientation){
-//            this.adjustSize();
-//               this.set('angle', (_sOrientation == 'landscape' ? 0 : 45)); 
-//               if (this.canvas){
-//                 this.canvas.renderAll();
-//               }
-               //this.set({originX: 'left', originY: 'top'}); 
-//            }, this);
+
             this.isTarget = isTarget.bind(this, this);
-//            if (!element) {
-//                this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
-//            } else {
-                //this._onCreate(_options, _fCallBack, element);
-                this._onCreate(_options, _fCallBack);
-            //}
+            this._onCreate(_options, _fCallBack);
         },
-        _createElement: function(url, _fCallBack) {
-            var img = fabric.document.createElement('img');
-            /** @ignore */
-            img.onload = function() {
-                if (typeof _fCallBack == 'function') {
-                    _fCallBack(img);
-                }
-                img = img.onload = null;
-            };
-            img.src = url;
+        _render: function(ctx) {
+
+        },
+        _createBackgroundObject: function(_options, _fCallBack) {
+//            var _oCircle = new fabric.Circle(_options);
+//            _oCircle.setGradient('fill', {
+//                x1: 0, y1: 0, r1: _oCircle.get('radius') / 10,
+//                x2: 0, y2: 0, r2: _oCircle.get('radius'),
+//                opacity: 0.3,
+//                colorStops: {
+//                    '0': "white",
+//                    '0.2': "black",
+//                    '0.6': "gray",
+//                    '0.8': "black",
+//                    '1': "white"}
+//            });
+//            _oCircle.cloneAsImage(function(_oImg){
+//                //Сохранить в картинку
+//                //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
+//                _oImg.set({top: this.getTop(), left: this.getLeft(), width: _oCircle.getWidth(), height: _oCircle.getHeight(), perPixelTargetFind: true,
+//                     selectable: this.get('selectable'),
+//                     originX: this.get('originX'),
+//                     originY: this.get('originY')});
+//               this._backgroundObject = _oImg;
+//               _fCallBack.apply(this);
+//           }.bind(this));
+            fabric.Image.fromURL('css/images/target2.png', function(_oImg) {
+                _oImg.set({top: this.getTop(), left: this.getLeft(), width: this.getWidth(), height: this.getHeight(), perPixelTargetFind: true,
+                    selectable: this.get('selectable'),
+                    originX: this.get('originX'),
+                    originY: this.get('originY')});
+
+                this._backgroundObject = _oImg;
+                _fCallBack.apply(this);
+            }.bind(this));
+        },
+        _adjustGradient: function() {
+            this.setGradient('fill', {
+                x1: 0, y1: 0, r1: this.get('radius') / 10,
+                x2: 0, y2: 0, r2: this.get('radius'),
+                opacity: 0.3,
+                colorStops: {
+                    '0': "white",
+                    '0.2': "black",
+                    '0.6': "gray",
+                    '0.8': "black",
+                    '1': "white"}
+            });
+        },
+        setRadius: function(_nRadius) {
+            this.callSuper('setRadius', _nRadius);
+            if (this._backgroundObject) {
+                this._backgroundObject.set({width: this.getWidth(), height: this.getHeight()});
+            }
+
+            //this._adjustGradient();
+//            if (this._back){
+//                this._back.set({width: this.get('radius')*2, height: this.get('radius')*2});
+//            }
+
         },
         _onCreate: function(_options, _fCallBack) {
             //this.callSuper('initialize', element, _options);
-            var _oDefault  = {perPixelTargetFind: true,
-                selectable: false,
-                originX: 'left',
-                originY: 'top'};
-            $.extend(_oDefault,_options);
-            
-            this.callSuper('initialize', _oDefault);
-//            this.set({perPixelTargetFind: true,
+//            var _oDefault  = {perPixelTargetFind: true,
 //                selectable: false,
 //                originX: 'left',
-//                originY: 'top'});
+//                originY: 'top'};
+//            $.extend(_oDefault,_options);
+
+            this.callSuper('initialize', _options);
+            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false});
             this.on('added', function() {
                 this.off('added', arguments.callee);
                 this._addedObject();
             }.bind(this));
-            if (typeof _fCallBack == 'function') {
-                _fCallBack(this);
-            }
+            this._createBackgroundObject(_default, _fCallBack.bind(this, this));
+        },
+        _setAccelerometerActivate: function(_bActivate) {
+            $(window).on('deviceorientation', function(_oJQEvent) {
+                var _oOriginalEvent = _oJQEvent.originalEvent,
+                        _oRotationRate = _oOriginalEvent.rotationRate,
+                        _oAcceleration = _oOriginalEvent.acceleration,
+                        _oAccelerationIncludingGravity = _oOriginalEvent.accelerationIncludingGravity,
+                        _aRotationRate = [];
+
+                for (var i in _oAccelerationIncludingGravity) {
+                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed(2));
+                }
+
+                if (this._textField){
+                    this._textField.setText(_aRotationRate.join(" "));
+                    if (this._canvas){
+                        this._canvas.renderAll();
+                    }
+                }
+
+            }.bind(this));
+
         },
         _addedObject: function() {
 
@@ -182,7 +236,10 @@
 //                    '0': "green",
 //                    '1': "black"}
 //            });
+            //this.setRadius(this.get('radius'));
+            this.canvas.add(this._backgroundObject);
             this.canvas.add(this._getCircle());
+            this._setAccelerometerActivate(true);
             //loadSvgObject(this.canvas);
             this._getCircle().bringToFront();
             this.canvas.renderAll();
@@ -234,8 +291,8 @@
         _mouseMove: function(_oEvent) {
             _oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
-                    _oCoords = this.isTarget(_oEvent);
-            if (this._observe > 0 && _oCoords) {
+                    _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
+            if (_oCoords) {
                 this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
             }
         },
@@ -263,9 +320,9 @@
                         _nCurentPosY = _y - _y1,
                         _nCoordX = (_nCurentPosX / _nFullX),
                         _nCoordY = -(_nCurentPosY / _nFullY);
-                if (this._textField) {
-                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
-                }
+//                if (this._textField) {
+//                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
+//                }
 
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
@@ -296,7 +353,7 @@
 
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
             this._initTextField();
-            new SideManipulator({left: 0, top: 0, radius: 1, stroke: 'black'}, function(_Object) {
+            new SideManipulator({left: 0, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
                 this.adjustSize();
@@ -327,27 +384,26 @@
             // Disables menu
         },
         _initTextField: function() {
-            var text = new fabric.Text('', {fontSize: 15, left: 900, top: 500});
+            var text = new fabric.Text('', {fontSize: 15});
             text.originX = 'left';
             text.originY = 'top';
             this._canvas.add(text);
             this._textField = text;
         },
+        _getPreferredSideRadius: function() {
+            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed();
+        },
         adjustSize: function() {
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
             if (this._sideManipulator) {
-                this._sideManipulator.set({radius: ((this.getPreferredHeight() > this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth())/10).toFixed()});
-                debugger;
-               //this._sideManipulator.set({height: this.getPreferredHeight(), width: this.getPreferredWidth()});
-                //this._sideManipulator.scaleToHeight(this.getPreferredHeight());
-                //if (this._sideManipulator.getWidth() > this.getPreferredWidth()) {
-                //    this._sideManipulator.scaleToWidth(this.getPreferredWidth());
-                //}
-                
+                if (this._textField) {
+                    this._textField.set({left: this._sideManipulator.getWidth() + 10, top: 10});
+                }
+                this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
-            this._canvas.renderAll();
 
+            this._canvas.renderAll();
         },
         getPreferredHeight: function() {
             return document.getElementById('joystik').clientHeight;
@@ -368,12 +424,4 @@
 
 
     });
-//    $(function() {
-//        (new JoyStikApplication()).start();
-//
-//
-//    });
-
-    //bindOrientationEvents();
-
 })();
