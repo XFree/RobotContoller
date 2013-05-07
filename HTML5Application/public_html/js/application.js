@@ -365,7 +365,7 @@
 //          },
         initialize: function() {
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
-             this.adjustSize();
+            this.adjustSize();
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
             //this._initTextField();
             
