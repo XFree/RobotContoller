@@ -18,6 +18,21 @@
     }
 
 
+    var _oMatchMedia = window.matchMedia("(orientation: portrait)");
+    function addOrientationChangeListener(_fListener, _oContext) {
+        if (typeof _fListener == 'function') {
+            _oMatchMedia.addListener(function(m) {
+                if (m.matches) {
+                    _fListener.call(_oContext, 'portrait'); // Changed to portrait
+                } else {
+                    _fListener.call(_oContext, 'landscape'); // Changed to landscape
+                }
+                ;
+            });
+        }
+    }
+
+
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         return _nX > tlX && _nX < brX && _nY > tlY && _nY < brY;
     }
@@ -53,7 +68,10 @@
 
 
     function bindOrientationEvents() {
-        return
+        $(window).on('compassneedscalibration', function(_oEvent) {
+            _oEvent.preventDefault();
+        });
+        return;
         $(window).bind('deviceorientation', function(_oJQEvent) {
             if (this._textField) {
                 var _oOriginalEvent = _oJQEvent.originalEvent,
@@ -89,48 +107,104 @@
     }
 
 
-    var SideManipulator = createClass(fabric.Image, {
-        initialize: function(element, _options, _fCallBack) {
+    var SideManipulator = createClass(fabric.Object, {
+        initialize: function(_options, _fCallBack) {
             this._observe = 0;
             this.mouseDown = this._mouseDown.bind(this);
             this.mouseMove = this._mouseMove.bind(this);
             this.mouseUp = this._mouseUp.bind(this);
+
             this.isTarget = isTarget.bind(this, this);
-            if (!element) {
-                this._createElement('css/images/target.png', this._onCreate.bind(this, _options, _fCallBack));
-            } else {
-                this._onCreate(_options, _fCallBack, element);
+            this._onCreate(_options, _fCallBack);
+        },
+        _render: function(ctx) {
+        },
+        _createCircleObject: function(_fCallback) {
+            fabric.Image.fromURL('css/images/stik.png', function(_oImg) {
+                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y, width: 40, height: 40, perPixelTargetFind: true,
+                    selectable: false,
+                    originX: 'center',
+                    originY: 'center'});
+                this._circle = _oImg;
+                _fCallback.apply(this);
+            }.bind(this));
+        },
+        _createBackgroundObject: function(_options, _fCallBack) {
+//            var _oCircle = new fabric.Circle(_options);
+//            _oCircle.setGradient('fill', {
+//                x1: 0, y1: 0, r1: _oCircle.get('radius') / 10,
+//                x2: 0, y2: 0, r2: _oCircle.get('radius'),
+//                opacity: 0.3,
+//                colorStops: {
+//                    '0': "white",
+//                    '0.2': "black",
+//                    '0.6': "gray",
+//                    '0.8': "black",
+//                    '1': "white"}
+//            });
+//            _oCircle.cloneAsImage(function(_oImg){
+//                //Сохранить в картинку
+//                //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
+//                _oImg.set({top: this.getTop(), left: this.getLeft(), width: _oCircle.getWidth(), height: _oCircle.getHeight(), perPixelTargetFind: true,
+//                     selectable: this.get('selectable'),
+//                     originX: this.get('originX'),
+//                     originY: this.get('originY')});
+//               this._backgroundObject = _oImg;
+//               _fCallBack.apply(this);
+//           }.bind(this));
+            fabric.Image.fromURL('css/images/target2.png', function(_oImg) {
+                _oImg.set({top: this.getTop(), left: this.getLeft(), width: this.getWidth(), height: this.getHeight(), perPixelTargetFind: true,
+                    selectable: this.get('selectable'),
+                    originX: this.get('originX'),
+                    originY: this.get('originY')});
+
+                this._backgroundObject = _oImg;
+                _fCallBack.apply(this);
+            }.bind(this));
+        },
+        setRadius: function(_nRadius) {
+            fabric.Circle.prototype.setRadius.apply(this, arguments);
+            //this.callSuper('setRadius', _nRadius);
+            if (this._backgroundObject) {
+                this._backgroundObject.set({width: this.getWidth(), height: this.getHeight()});
+            }
+            if (this._circle) {
+                var _nDiametr = this.getWidth() / 5 > 40 ? this.getWidth() / 5 : 40;
+                this._circle.set({width: _nDiametr, height: _nDiametr});
             }
         },
-        _createElement: function(url, _fCallBack) {
-            var img = fabric.document.createElement('img');
-            /** @ignore */
-            img.onload = function() {
-                if (typeof _fCallBack == 'function') {
-                    _fCallBack(img);
-                }
-                img = img.onload = null;
-            };
-            img.src = url;
-        },
-                
-        
-        _onCreate: function(_options, _fCallBack, element) {
-            this.callSuper('initialize', element, _options);
-            this.set({perPixelTargetFind: true,
-                selectable: false,
-                originX: 'left',
-                originY: 'top'});
+        _onCreate: function(_options, _fCallBack) {
+            fabric.Circle.prototype.initialize.apply(this, arguments);
+            //this.callSuper('initialize', _options);
+            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false});
             this.on('added', function() {
                 this.off('added', arguments.callee);
                 this._addedObject();
             }.bind(this));
-            if (typeof _fCallBack == 'function') {
-                _fCallBack(this);
-            }
+            this._createBackgroundObject(_default, this._createCircleObject.bind(this, _fCallBack.bind(this, this)));
+
         },
-                
-        
+        _setAccelerometerActivate: function(_bActivate) {
+            $(window).bind('devicemotion', function(_oJQEvent) {
+                var _oOriginalEvent = _oJQEvent.originalEvent,
+                        _oRotationRate = _oOriginalEvent.rotationRate,
+                        _oAcceleration = _oOriginalEvent.acceleration,
+                        _oAccelerationIncludingGravity = _oOriginalEvent.accelerationIncludingGravity,
+                        _aRotationRate = [];
+                for (var i in _oAccelerationIncludingGravity) {
+                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed());
+                }
+
+                if (this._textField) {
+                    this._textField.setText(_aRotationRate.join(" "));
+                    if (this._textField.canvas) {
+                        this._textField.canvas.renderAll();
+                    }
+                }
+
+            }.bind(this));
+
+        },
         _addedObject: function() {
 
             //            MSPointerDown
@@ -146,7 +220,18 @@
 //Событие MSGestureChange
 //Событие MSGestureEnd
 //Событие MSInertiaStart
+//            this.setGradient('fill', {
+//                x1: 0, y1: 0, r1: 100,
+//                x2: 0, y2: 0, r2: 1000,
+//                opacity: 0.75,
+//                colorStops: {
+//                    '0': "green",
+//                    '1': "black"}
+//            });
+            //this.setRadius(this.get('radius'));
+            this.canvas.add(this._backgroundObject);
             this.canvas.add(this._getCircle());
+            this._setAccelerometerActivate(true);
             //loadSvgObject(this.canvas);
             this._getCircle().bringToFront();
             this.canvas.renderAll();
@@ -154,18 +239,19 @@
                 //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
                 //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
                 //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                $(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
                 //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
-                
+
             } else {
                 $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
                 $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
                 $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
             }
+
             $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
             $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
             $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
+            //$(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
@@ -173,7 +259,7 @@
         },
         _getCircle: function() {
             if (!this._circle) {
-                this._circle = new fabric.Circle({radius: 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
+                this._circle = new fabric.Circle({radius: this.get('radius') / 10 > 20 ? this.get('radius') / 10 : 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
                 //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
                 this._circle.setGradient('fill', {
                     x1: 4, y1: -2, r1: this._circle.get('radius') / 10,
@@ -188,21 +274,22 @@
             return this._circle;
         },
         _mouseDown: function(_oEvent) {
-            //_oEvent.preventDefault();
+            _oEvent.preventDefault();
             if (this.isTarget(_oEvent)) {
                 this._observe += 1;
                 this.mouseMove(_oEvent);
             }
         },
         _mouseMove: function(_oEvent) {
-            //_oEvent.preventDefault();
+            _oEvent.preventDefault();
             var _oOriginalEvent = _oEvent.originalEvent,
-                    _oCoords = this.isTarget(_oEvent);
-            if (this._observe > 0 && _oCoords) {
+                    _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
+            if (_oCoords) {
                 this.moveShape(this._getCircle(), _oCoords.x, _oCoords.y);
-            } 
+            }
         },
         _mouseUp: function(_oEvent) {
+            _oEvent.preventDefault();
             if (this._observe > 0) {
                 this._observe -= 1;
                 if (this._observe <= 0) {
@@ -215,9 +302,9 @@
             if (_oShape) {
                 var _oCanvas = this.canvas;
                 var _oCanvasOffset = _oCanvas._offset,
-                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth()/2,
+                        _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth() / 2,
                         _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
-                        _y1 = _oCanvasOffset.top + this.getTop() + + this.getHeight()/2,
+                        _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
                         _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight()
                 var _nFullX = this.getWidth() / 200,
                         _nFullY = this.getHeight() / 200,
@@ -225,10 +312,10 @@
                         _nCurentPosY = _y - _y1,
                         _nCoordX = (_nCurentPosX / _nFullX),
                         _nCoordY = -(_nCurentPosY / _nFullY);
-                if (this._textField) {
-                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
-                }
-                
+//                if (this._textField) {
+//                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
+//                }
+
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
                         duration: 100,
@@ -238,7 +325,7 @@
                     _oShape.set({left: _x, top: _y});
                     _oCanvas.renderAll();
                 }
-                
+
             }
         }
     });
@@ -255,22 +342,18 @@
 //          },
         initialize: function() {
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
-            this.adjustSize();
+
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
-            this._initTextField();
-            new SideManipulator(undefined, {left: 0, top: 0}, function(_Object) {
-                _Object.scaleToWidth(this._canvas.getWidth()/2);
+            //this._initTextField();
+            new SideManipulator({left: 0, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
+                this.adjustSize();
                 this._canvas.add(_Object);
 
             }.bind(this));
-
             this._initEvents();
 
-        },
-        _onOrientationChange: function(_oEvent) {
-            alert('change');
         },
         _initEvents: function() {
             //window.addEventListener('load', setOrientation, false);
@@ -290,33 +373,35 @@
             // Disables menu
         },
         _initTextField: function() {
-            var text = new fabric.Text('', {fontSize: 15, left: 700, top: 500});
+            var text = new fabric.Text('', {fontSize: 15});
             text.originX = 'left';
             text.originY = 'top';
             this._canvas.add(text);
             this._textField = text;
         },
+        _getPreferredSideRadius: function() {
+            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed();
+        },
         adjustSize: function() {
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
             if (this._sideManipulator) {
-                //this._sideManipulator.set({height: this.getPreferredHeight(), width: this.getPreferredWidth()});
-                //this._sideManipulator.scaleToHeight(this.getPreferredHeight());
-                //if (this._sideManipulator.getWidth() > this.getPreferredWidth()) {
-                //    this._sideManipulator.scaleToWidth(this.getPreferredWidth());
-                //}
+                this._sideManipulator.setRadius(this._getPreferredSideRadius());
+                if (this._textField) {
+                    this._textField.set({left: this._sideManipulator.getWidth() / 2, top: 0});
+                    this._textField.bringToFront();
+                }
 
             }
             this._canvas.renderAll();
-//            if (!this._observe && this._sideManipulator) {
-//                this._sideManipulator.center();
-//            }
         },
         getPreferredHeight: function() {
-            return window.innerHeight;
+            return document.getElementById('joystik').clientHeight;
+            //return window.innerHeight;
         },
         getPreferredWidth: function() {
-            return window.innerWidth;
+            return document.getElementById('joystik').clientWidth;
+            //return window.innerWidth;
         },
         start: function() {
 
@@ -329,12 +414,4 @@
 
 
     });
-//    $(function() {
-//        (new JoyStikApplication()).start();
-//
-//
-//    });
-
-    //bindOrientationEvents();
-
 })();

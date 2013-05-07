@@ -25,5 +25,30 @@ canvas {
   -webkit-user-select: none;
   -user-select: none;
 }
+#joystik {
+ height: 100%;
+ width: 100%;
+}
 
-
+/* Portrait */
+/*
+@media screen and (orientation:portrait) {
+   .lower-canvas {
+        transform:rotate(-90deg);
+        -webkit-transform:rotate(-90deg);
+        -moz-transform:rotate(-90deg);
+        -o-transform:rotate(-90deg);
+    }
+}
+*/
+/* Landscape */
+/*
+@media screen and (orientation:landscape) {
+    .lower-canvas { 
+        transform:rotate(0deg);
+        -webkit-transform:rotate(0deg);
+        -moz-transform:rotate(0deg);
+        -o-transform:rotate(0deg);
+    }
+}
+*/
