@@ -107,7 +107,7 @@
     }
 
 
-    var SideManipulator = createClass(fabric.Circle, {
+    var SideManipulator = createClass(fabric.Object, {
         initialize: function(_options, _fCallBack) {
             this._observe = 0;
             this.mouseDown = this._mouseDown.bind(this);
@@ -120,6 +120,18 @@
         _render: function(ctx) {
 
         },
+                
+        _createCircleObject: function(_fCallback){
+            fabric.Image.fromURL('css/images/stik.png', function(_oImg) {
+                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y , width: 40, height: 40, perPixelTargetFind: true,
+                    selectable: false,
+                    originX: 'center',
+                    originY: 'center'});
+                this._circle = _oImg;
+                _fCallback.apply(this);
+            }.bind(this));
+        },   
+                
         _createBackgroundObject: function(_options, _fCallBack) {
 //            var _oCircle = new fabric.Circle(_options);
 //            _oCircle.setGradient('fill', {
@@ -167,9 +179,14 @@
             });
         },
         setRadius: function(_nRadius) {
-            this.callSuper('setRadius', _nRadius);
+            fabric.Circle.prototype.setRadius.apply(this,arguments);
+            //this.callSuper('setRadius', _nRadius);
             if (this._backgroundObject) {
                 this._backgroundObject.set({width: this.getWidth(), height: this.getHeight()});
+            }
+            if (this._circle){
+             var _nDiametr = this.getWidth()/5 > 40 ? this.getWidth()/5 : 40;
+              this._circle.set({width: _nDiametr, height: _nDiametr});
             }
 
             //this._adjustGradient();
@@ -192,7 +209,8 @@
                 this.off('added', arguments.callee);
                 this._addedObject();
             }.bind(this));
-            this._createBackgroundObject(_default, _fCallBack.bind(this, this));
+            this._createBackgroundObject(_default, this._createCircleObject.bind(this,_fCallBack.bind(this, this)));
+            
         },
         _setAccelerometerActivate: function(_bActivate) {
             $(window).bind('devicemotion', function(_oJQEvent) {
@@ -406,7 +424,6 @@
                 }
                 
             }
-
             this._canvas.renderAll();
         },
         getPreferredHeight: function() {
