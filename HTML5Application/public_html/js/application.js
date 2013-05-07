@@ -68,6 +68,9 @@
 
 
     function bindOrientationEvents() {
+        $(window).on('compassneedscalibration',function(_oEvent){
+           _oEvent.preventDefault(); 
+        });
         return;
         $(window).bind('deviceorientation', function(_oJQEvent) {
             if (this._textField) {
@@ -192,21 +195,20 @@
             this._createBackgroundObject(_default, _fCallBack.bind(this, this));
         },
         _setAccelerometerActivate: function(_bActivate) {
-            $(window).on('deviceorientation', function(_oJQEvent) {
+            $(window).bind('devicemotion', function(_oJQEvent) {
                 var _oOriginalEvent = _oJQEvent.originalEvent,
                         _oRotationRate = _oOriginalEvent.rotationRate,
                         _oAcceleration = _oOriginalEvent.acceleration,
                         _oAccelerationIncludingGravity = _oOriginalEvent.accelerationIncludingGravity,
                         _aRotationRate = [];
-
                 for (var i in _oAccelerationIncludingGravity) {
-                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed(2));
+                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed());
                 }
-
+                
                 if (this._textField){
                     this._textField.setText(_aRotationRate.join(" "));
-                    if (this._canvas){
-                        this._canvas.renderAll();
+                    if (this._textField.canvas){
+                        this._textField.canvas.renderAll();
                     }
                 }
 
@@ -267,7 +269,7 @@
         },
         _getCircle: function() {
             if (!this._circle) {
-                this._circle = new fabric.Circle({radius: 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
+                this._circle = new fabric.Circle({radius: this.get('radius')/10 > 20 ? this.get('radius')/10 : 20 , left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
                 //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
                 this._circle.setGradient('fill', {
                     x1: 4, y1: -2, r1: this._circle.get('radius') / 10,
@@ -397,10 +399,12 @@
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
             if (this._sideManipulator) {
-                if (this._textField) {
-                    this._textField.set({left: this._sideManipulator.getWidth() + 10, top: 10});
-                }
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
+                if (this._textField) {
+                    this._textField.set({left: this._sideManipulator.getWidth() /2 , top: 0});
+                    this._textField.bringToFront();
+                }
+                
             }
 
             this._canvas.renderAll();
