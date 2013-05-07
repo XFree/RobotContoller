@@ -68,8 +68,8 @@
 
 
     function bindOrientationEvents() {
-        $(window).on('compassneedscalibration',function(_oEvent){
-           _oEvent.preventDefault(); 
+        $(window).on('compassneedscalibration', function(_oEvent) {
+            _oEvent.preventDefault();
         });
         return;
         $(window).bind('deviceorientation', function(_oJQEvent) {
@@ -118,20 +118,17 @@
             this._onCreate(_options, _fCallBack);
         },
         _render: function(ctx) {
-
         },
-                
-        _createCircleObject: function(_fCallback){
+        _createCircleObject: function(_fCallback) {
             fabric.Image.fromURL('css/images/stik.png', function(_oImg) {
-                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y , width: 40, height: 40, perPixelTargetFind: true,
+                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y, width: 40, height: 40, perPixelTargetFind: true,
                     selectable: false,
                     originX: 'center',
                     originY: 'center'});
                 this._circle = _oImg;
                 _fCallback.apply(this);
             }.bind(this));
-        },   
-                
+        },
         _createBackgroundObject: function(_options, _fCallBack) {
 //            var _oCircle = new fabric.Circle(_options);
 //            _oCircle.setGradient('fill', {
@@ -165,52 +162,27 @@
                 _fCallBack.apply(this);
             }.bind(this));
         },
-        _adjustGradient: function() {
-            this.setGradient('fill', {
-                x1: 0, y1: 0, r1: this.get('radius') / 10,
-                x2: 0, y2: 0, r2: this.get('radius'),
-                opacity: 0.3,
-                colorStops: {
-                    '0': "white",
-                    '0.2': "black",
-                    '0.6': "gray",
-                    '0.8': "black",
-                    '1': "white"}
-            });
-        },
         setRadius: function(_nRadius) {
-            fabric.Circle.prototype.setRadius.apply(this,arguments);
+            fabric.Circle.prototype.setRadius.apply(this, arguments);
             //this.callSuper('setRadius', _nRadius);
             if (this._backgroundObject) {
                 this._backgroundObject.set({width: this.getWidth(), height: this.getHeight()});
             }
-            if (this._circle){
-             var _nDiametr = this.getWidth()/5 > 40 ? this.getWidth()/5 : 40;
-              this._circle.set({width: _nDiametr, height: _nDiametr});
+            if (this._circle) {
+                var _nDiametr = this.getWidth() / 5 > 40 ? this.getWidth() / 5 : 40;
+                this._circle.set({width: _nDiametr, height: _nDiametr});
             }
-
-            //this._adjustGradient();
-//            if (this._back){
-//                this._back.set({width: this.get('radius')*2, height: this.get('radius')*2});
-//            }
-
         },
         _onCreate: function(_options, _fCallBack) {
-            //this.callSuper('initialize', element, _options);
-//            var _oDefault  = {perPixelTargetFind: true,
-//                selectable: false,
-//                originX: 'left',
-//                originY: 'top'};
-//            $.extend(_oDefault,_options);
-
-            this.callSuper('initialize', _options);
+            fabric.Circle.prototype.initialize.apply(this, arguments);
+            //this.callSuper('initialize', _options);
             var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false});
             this.on('added', function() {
                 this.off('added', arguments.callee);
                 this._addedObject();
             }.bind(this));
-            this._createBackgroundObject(_default, this._createCircleObject.bind(this,_fCallBack.bind(this, this)));
-            
+            this._createBackgroundObject(_default, this._createCircleObject.bind(this, _fCallBack.bind(this, this)));
+
         },
         _setAccelerometerActivate: function(_bActivate) {
             $(window).bind('devicemotion', function(_oJQEvent) {
@@ -222,10 +194,10 @@
                 for (var i in _oAccelerationIncludingGravity) {
                     _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed());
                 }
-                
-                if (this._textField){
+
+                if (this._textField) {
                     this._textField.setText(_aRotationRate.join(" "));
-                    if (this._textField.canvas){
+                    if (this._textField.canvas) {
                         this._textField.canvas.renderAll();
                     }
                 }
@@ -287,7 +259,7 @@
         },
         _getCircle: function() {
             if (!this._circle) {
-                this._circle = new fabric.Circle({radius: this.get('radius')/10 > 20 ? this.get('radius')/10 : 20 , left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
+                this._circle = new fabric.Circle({radius: this.get('radius') / 10 > 20 ? this.get('radius') / 10 : 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
                 //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
                 this._circle.setGradient('fill', {
                     x1: 4, y1: -2, r1: this._circle.get('radius') / 10,
@@ -372,7 +344,7 @@
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
 
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
-            this._initTextField();
+            //this._initTextField();
             new SideManipulator({left: 0, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
@@ -382,9 +354,6 @@
             }.bind(this));
             this._initEvents();
 
-        },
-        _onOrientationChange: function(_oEvent) {
-            alert('change');
         },
         _initEvents: function() {
             //window.addEventListener('load', setOrientation, false);
@@ -419,10 +388,10 @@
             if (this._sideManipulator) {
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
                 if (this._textField) {
-                    this._textField.set({left: this._sideManipulator.getWidth() /2 , top: 0});
+                    this._textField.set({left: this._sideManipulator.getWidth() / 2, top: 0});
                     this._textField.bringToFront();
                 }
-                
+
             }
             this._canvas.renderAll();
         },
