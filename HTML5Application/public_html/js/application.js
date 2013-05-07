@@ -120,15 +120,33 @@
         _render: function(ctx) {
         },
         _createCircleObject: function(_fCallback) {
-            fabric.Image.fromURL('css/images/stik.png', function(_oImg) {
-                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y, width: 40, height: 40, perPixelTargetFind: true,
-                    selectable: false,
-                    originX: 'center',
-                    originY: 'center'});
+            var _oCircle = this._getCircle(true);
+            _oCircle.cloneAsImage(function(_oImg) {
+                _oCircle = null;
+                //fabric.Image.fromURL('css/images/stik.png', function(_oImg) {
+                _oImg.set({left: this.getCenterPoint().x, top: this.getCenterPoint().y,
+                    perPixelTargetFind: true});
                 this._circle = _oImg;
-                _fCallback.apply(this);
+                if (typeof _fCallback == 'function'){
+                    _fCallback.apply(this);
+                }
             }.bind(this));
         },
+        _getBackgroundObject:function(_options){
+             var _oCircle = new fabric.Circle(_options);
+            _oCircle.setGradient('fill', {
+                x1: 0, y1: 0, r1: _oCircle.get('radius') / 10,
+                x2: 0, y2: 0, r2: _oCircle.get('radius'),
+                opacity: 0.3,
+                colorStops: {
+                    '0': "white",
+                    '0.2': "black",
+                    '0.6': "gray",
+                    '0.8': "black",
+                    '1': "white"}
+            });
+            return _oCircle;
+        },        
         _createBackgroundObject: function(_options, _fCallBack) {
 //            var _oCircle = new fabric.Circle(_options);
 //            _oCircle.setGradient('fill', {
@@ -142,25 +160,25 @@
 //                    '0.8': "black",
 //                    '1': "white"}
 //            });
-//            _oCircle.cloneAsImage(function(_oImg){
-//                //Сохранить в картинку
-//                //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
-//                _oImg.set({top: this.getTop(), left: this.getLeft(), width: _oCircle.getWidth(), height: _oCircle.getHeight(), perPixelTargetFind: true,
-//                     selectable: this.get('selectable'),
-//                     originX: this.get('originX'),
-//                     originY: this.get('originY')});
-//               this._backgroundObject = _oImg;
-//               _fCallBack.apply(this);
-//           }.bind(this));
-            fabric.Image.fromURL('css/images/target2.png', function(_oImg) {
-                _oImg.set({top: this.getTop(), left: this.getLeft(), width: this.getWidth(), height: this.getHeight(), perPixelTargetFind: true,
-                    selectable: this.get('selectable'),
-                    originX: this.get('originX'),
-                    originY: this.get('originY')});
-
-                this._backgroundObject = _oImg;
-                _fCallBack.apply(this);
-            }.bind(this));
+            this._getBackgroundObject(_options).cloneAsImage(function(_oImg){
+                //Сохранить в картинку
+                //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
+                _oImg.set({top: this.getTop(), left: this.getLeft(), perPixelTargetFind: true,
+                     selectable: this.get('selectable'),
+                     originX: this.get('originX'),
+                     originY: this.get('originY')});
+               this._backgroundObject = _oImg;
+               _fCallBack.apply(this);
+           }.bind(this));
+//            fabric.Image.fromURL('css/images/target2.png', function(_oImg) {
+//                _oImg.set({top: this.getTop(), left: this.getLeft(), width: this.getWidth(), height: this.getHeight(), perPixelTargetFind: true,
+//                    selectable: this.get('selectable'),
+//                    originX: this.get('originX'),
+//                    originY: this.get('originY')});
+//
+//                this._backgroundObject = _oImg;
+//                _fCallBack.apply(this);
+//            }.bind(this));
         },
         setRadius: function(_nRadius) {
             fabric.Circle.prototype.setRadius.apply(this, arguments);
@@ -169,7 +187,8 @@
                 this._backgroundObject.set({width: this.getWidth(), height: this.getHeight()});
             }
             if (this._circle) {
-                var _nDiametr = this.getWidth() / 5 > 40 ? this.getWidth() / 5 : 40;
+                //this._createCircleObject();
+                var _nDiametr = (this.get('radius') / 8 > 20 ? this.get('radius') / 8 : 20) * 2;
                 this._circle.set({width: _nDiametr, height: _nDiametr});
             }
         },
@@ -257,21 +276,25 @@
         getCanvasEl: function() {
             return this.canvas.lowerCanvasEl;
         },
-        _getCircle: function() {
-            if (!this._circle) {
-                this._circle = new fabric.Circle({radius: this.get('radius') / 10 > 20 ? this.get('radius') / 10 : 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC', fill: 'rgb(100,100,200)'});
+        _getCircle: function(_notSave) {
+            var _oCircle = this._circle;
+            if (!_oCircle) {
+                _oCircle = new fabric.Circle({radius: this.get('radius') / 8 > 20 ? this.get('radius') / 8 : 20, left: this.getCenterPoint().x, top: this.getCenterPoint().y, selectable: false, stroke: '0000CC'});
                 //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
-                this._circle.setGradient('fill', {
-                    x1: 4, y1: -2, r1: this._circle.get('radius') / 10,
-                    x2: 0, y2: 0, r2: this._circle.get('radius'),
+                _oCircle.setGradient('fill', {
+                    x1: 4, y1: -2, r1: _oCircle.get('radius') / 10,
+                    x2: 0, y2: 0, r2: _oCircle.get('radius'),
                     colorStops: {
                         '0': "CCCCFF",
                         '0.4': "9933FF",
                         "0.8": "9900FF",
-                        '1': "6600FF"}
+                        '1': "9900FF"}
                 });
+             if (!_notSave){
+               this._circle = _oCircle;  
+             }   
             }
-            return this._circle;
+            return _oCircle;
         },
         _mouseDown: function(_oEvent) {
             _oEvent.preventDefault();
@@ -342,13 +365,13 @@
 //          },
         initialize: function() {
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
-
+             this.adjustSize();
             fabric.util.addListener(window, 'resize', this.adjustSize.bind(this));
             //this._initTextField();
+            
             new SideManipulator({left: 0, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
-                this.adjustSize();
                 this._canvas.add(_Object);
 
             }.bind(this));
