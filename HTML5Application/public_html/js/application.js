@@ -18,19 +18,19 @@
     }
 
 
-    var _oMatchMedia = window.matchMedia("(orientation: portrait)");
-    function addOrientationChangeListener(_fListener, _oContext) {
-        if (typeof _fListener == 'function') {
-            _oMatchMedia.addListener(function(m) {
-                if (m.matches) {
-                    _fListener.call(_oContext, 'portrait'); // Changed to portrait
-                } else {
-                    _fListener.call(_oContext, 'landscape'); // Changed to landscape
-                }
-                ;
-            });
-        }
-    }
+//    var _oMatchMedia = window.matchMedia("(orientation: portrait)");
+//    function addOrientationChangeListener(_fListener, _oContext) {
+//        if (typeof _fListener == 'function') {
+//            _oMatchMedia.addListener(function(m) {
+//                if (m.matches) {
+//                    _fListener.call(_oContext, 'portrait'); // Changed to portrait
+//                } else {
+//                    _fListener.call(_oContext, 'landscape'); // Changed to landscape
+//                }
+//                ;
+//            });
+//        }
+//    }
 
 
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
