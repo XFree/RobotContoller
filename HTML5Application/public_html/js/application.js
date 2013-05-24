@@ -313,8 +313,7 @@
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
 
-
-            new SideManipulator({left: 0, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
+            new SideManipulator({left: 0, top: this._canvas.getCenter().top - this._getPreferredSideRadius(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
@@ -322,7 +321,7 @@
             }.bind(this));
 
             //var t = this._getPreferredSideRadius();
-            new SideManipulator({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
+            new SideManipulator({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2, top: this._canvas.getCenter().top - this._getPreferredSideRadius(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
@@ -352,7 +351,7 @@
             this._textField = text;
         },
         _getPreferredSideRadius: function() {
-            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed() - 40;
+            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed() - 20;
         },
         adjustSize: function(_oEvent) {
             this._canvas.setHeight(this.getPreferredHeight());
