@@ -361,7 +361,7 @@
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
             if (this._sideManipulator2) {
-                //this._sideManipulator2.set({left: this._getPreferredSideRadius() * 2 + 10});
+                this._sideManipulator2.set({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2});
                 this._sideManipulator2.setRadius(this._getPreferredSideRadius());
             }
             this._canvas.clear();
