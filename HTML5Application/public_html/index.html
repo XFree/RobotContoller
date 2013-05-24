@@ -60,8 +60,8 @@ body {
 
 var x = 0, y = 0,
     vx = 0, vy = 0,
-	ax = 0, ay = 0;
-	
+    ax = 0, ay = 0;
+
 var sphere = document.getElementById("sphere");
 
 if (window.DeviceMotionEvent != undefined) {
@@ -76,7 +76,7 @@ if (window.DeviceMotionEvent != undefined) {
 			document.getElementById("rotationAlpha").innerHTML = e.rotationRate.alpha;
 			document.getElementById("rotationBeta").innerHTML = e.rotationRate.beta;
 			document.getElementById("rotationGamma").innerHTML = e.rotationRate.gamma;
-		}		
+		}
 	}
 
 	setInterval( function() {
