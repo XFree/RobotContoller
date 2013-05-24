@@ -283,15 +283,15 @@
                         _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
                         _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
                         _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight()
-                var _nFullX = this.getWidth() / 200,
-                        _nFullY = this.getHeight() / 200,
+                var _nFullX = this.getWidth() / 2,
+                        _nFullY = this.getHeight() / 2,
                         _nCurentPosX = _x - _x1,
                         _nCurentPosY = _y - _y1,
                         _nCoordX = (_nCurentPosX / _nFullX),
                         _nCoordY = -(_nCurentPosY / _nFullY);
-//                if (this._textField) {
-//                    this._textField.set({text: String(_nCoordX.toFixed()) + ' ' + String(_nCoordY.toFixed())})
-//                }
+                if (this._textField) {
+                    this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
+                }
 
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
@@ -312,10 +312,10 @@
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: '1.jpg'});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
-
+            this._initTextField()
             new SideManipulator({left: 0, top: this._canvas.getCenter().top - this._getPreferredSideRadius(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
-                //this._sideManipulator._textField = this._textField;
+                this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
 
             }.bind(this));
