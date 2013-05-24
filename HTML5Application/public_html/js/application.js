@@ -107,8 +107,8 @@
             return _oCircle;
         },
         _createBackgroundObject: function(_options, _fCallBack) {
-            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false,transparentCorners: true, opacity: 0.5, stroke: 'black'}),
-                _oImg = this._getBackgroundObject(_default).cloneAsImage(function(_oImg) {
+            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false,transparentCorners: true, opacity: 0.5, stroke: 'black'});
+            this._getBackgroundObject(_default).cloneAsImage(function(_oImg) {
                 //Сохранить в картинку
                 //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
                 _oImg.set({top: this.getTop(), left: this.getLeft(), perPixelTargetFind: true,
@@ -322,7 +322,7 @@
             }.bind(this));
 
             //var t = this._getPreferredSideRadius();
-            new SideManipulator({left: +(this._getPreferredSideRadius()) * 2 + 10, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
+            new SideManipulator({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
@@ -361,7 +361,7 @@
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
             if (this._sideManipulator2) {
-                this._sideManipulator2.set({left: this._getPreferredSideRadius() * 2 + 10});
+                this._sideManipulator2.set({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2});
                 this._sideManipulator2.setRadius(this._getPreferredSideRadius());
             }
             this._canvas.clear();
