@@ -10047,7 +10047,7 @@ fabric.util.object.extend(fabric.StaticCanvas.prototype, /** @lends fabric.Stati
         hasControls:        this.hasControls,
         hasBorders:         this.hasBorders,
         hasRotatingPoint:   this.hasRotatingPoint,
-        transparentCorners: this.transparentCorners,
+        cloneAsImageCorners: this.transparentCorners,
         perPixelTargetFind: this.perPixelTargetFind,
         shadow:             (this.shadow && this.shadow.toObject) ? this.shadow.toObject() : this.shadow,
         visible:            this.visible
