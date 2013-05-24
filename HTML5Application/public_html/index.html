@@ -92,14 +92,14 @@ if (window.DeviceMotionEvent != undefined) {
 		vy = vy * 0.98;
 		y = parseInt(y + vy / 50);
 		x = parseInt(x + vx / 50);
-		
+
 		boundingBoxCheck();
-		
+
 		sphere.style.top = y + "px";
 		sphere.style.left = x + "px";
-		
+
 	}, 25);
-} 
+}
 
 
 function boundingBoxCheck(){
@@ -107,7 +107,6 @@ function boundingBoxCheck(){
 	if (y<0) { y = 0; vy = -vy; }
 	if (x>document.documentElement.clientWidth-20) { x = document.documentElement.clientWidth-20; vx = -vx; }
 	if (y>document.documentElement.clientHeight-20) { y = document.documentElement.clientHeight-20; vy = -vy; }
-	
 }
 
 </script>
