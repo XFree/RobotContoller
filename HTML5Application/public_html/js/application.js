@@ -291,6 +291,7 @@
                         _nCoordY = -(_nCurentPosY / _nFullY);
                 if (this._textField) {
                     this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
+                    this._textField.bringToFront();
                 }
 
                 if (_bAnimate) {
