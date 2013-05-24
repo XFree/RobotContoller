@@ -352,7 +352,7 @@
             this._textField = text;
         },
         _getPreferredSideRadius: function() {
-            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed() - 10;
+            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed() - 40;
         },
         adjustSize: function(_oEvent) {
             this._canvas.setHeight(this.getPreferredHeight());
