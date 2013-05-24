@@ -323,7 +323,7 @@
 
             //var t = this._getPreferredSideRadius();
             new SideManipulator({left: +(this._getPreferredSideRadius()) * 2 + 10, top: 0, originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
-                //this._sideManipulator = _Object;
+                this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
 
@@ -352,7 +352,7 @@
             this._textField = text;
         },
         _getPreferredSideRadius: function() {
-            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed();
+            return ((this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredHeight() : this.getPreferredWidth()) / 2).toFixed() - 10;
         },
         adjustSize: function(_oEvent) {
             this._canvas.setHeight(this.getPreferredHeight());
@@ -360,7 +360,12 @@
             if (this._sideManipulator) {
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
-
+            if (this._sideManipulator2) {
+                this._sideManipulator2.set({left: this._getPreferredSideRadius() * 2 + 10});
+                this._sideManipulator2.setRadius(this._getPreferredSideRadius());
+            }
+            this._canvas.clear();
+            this._canvas.renderAll();
         },
         getPreferredHeight: function() {
             return document.getElementById('joystik').clientHeight;
