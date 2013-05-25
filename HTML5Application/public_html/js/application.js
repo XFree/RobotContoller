@@ -381,12 +381,11 @@
             return this.getPreferredHeight() < this.getPreferredWidth() ? this._canvas.getCenter().top - this._getPreferredSideRadius() : 0;
         },
         _gerPreferredTopManipulator2: function() {
-            return this.getPreferredHeight() < this.getPreferredWidth() ? this._gerPreferredTopManipulator1() : this.getPreferredHeight() - this._getPreferredSideRadius();
+            return this.getPreferredHeight() < this.getPreferredWidth() ? this._gerPreferredTopManipulator1() : this.getPreferredHeight() - this._getPreferredSideRadius() * 2;
         },
         _gerPreferredLeftManipulator1: function() {
             return  0;
         },
-        
         _gerPreferredLeftManipulator2: function() {
             return  this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredWidth() - (this._getPreferredSideRadius() * 2) : this._gerPreferredLeftManipulator1();
 
@@ -441,16 +440,16 @@
             this._canvas.setWidth(this.getPreferredWidth());
 
             if (this._sideManipulator) {
-                
-               this._sideManipulator.set({top: this._gerPreferredTopManipulator1(), left: this._gerPreferredLeftManipulator1()});
-               this._sideManipulator.setRadius(this._getPreferredSideRadius()); 
-               
+
+                this._sideManipulator.set({top: this._gerPreferredTopManipulator1(), left: this._gerPreferredLeftManipulator1()});
+                this._sideManipulator.setRadius(this._getPreferredSideRadius());
+
             }
             if (this._sideManipulator2) {
-                
+
                 this._sideManipulator2.set({top: this._gerPreferredTopManipulator2(), left: this._gerPreferredLeftManipulator2()});
                 this._sideManipulator2.setRadius(this._getPreferredSideRadius());
-                
+
             }
 
             this._canvas.clear();
@@ -459,9 +458,9 @@
                 this._startStopButton.set({left: this._canvas.getCenter().left, top: this.getPreferredHeight() - this._startStopButton.getHeight() - 5});
                 this._startStopButton.bringToFront();
             }
-           
-            setTimeout(this._canvas.renderAll.bind(this._canvas),1);
-            
+
+            setTimeout(this._canvas.renderAll.bind(this._canvas), 1);
+
         },
         getPreferredHeight: function() {
             return document.getElementById('joystik').clientHeight;
