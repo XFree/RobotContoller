@@ -49,7 +49,6 @@ app.get('/dron/events', function(request, response){
     'Connection': 'keep-alive'
   });
   response.write('\n');
-  return
 
   // Handle connection interrupt
   request.on("close", function() {
@@ -66,7 +65,7 @@ app.get('/dron/events', function(request, response){
       // Sends update to client only if drone state has been changed
       if (bStateChanged) {
         response.write('data:' + JSON.stringify({
-          'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+          'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
           'img'         : oCurrentState.img
         }) +   '\n\n');
       }
@@ -74,8 +73,10 @@ app.get('/dron/events', function(request, response){
   });
 
   // Create PNG stream and subscribe for it's data
+/*
   var pngStream = droneClient.createPngStream();
   pngStream.on('data', function(pngImage) {
+    console.log('ondata');
     var img = 'data:image/png;base64,' + (new Buffer(pngImage, 'binary').toString('base64'));
     if (img != oCurrentState.img) {
       oCurrentState.img = img;
@@ -94,6 +95,7 @@ app.get('/dron/events', function(request, response){
       }
     }
   });
+*/
 });
 
 // Take the dron off
@@ -106,15 +108,18 @@ app.post('/dron/takeoff', function(request, response) {
       'Connection': 'close'
     });
     response.write('\n0');
+    response.end();
     return;
   }
-  droneClient.takeoff();
-  response.writeHead(200, {
-    'Content-Type': 'text/plain',
-    'Cache-Control': 'no-cache',
-    'Connection': 'close'
+  droneClient.takeoff(function(){
+    response.writeHead(200, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n1');
+//    response.end();
   });
-  response.write('\n1');
 });
 
 // Makes the drom land
@@ -127,6 +132,31 @@ app.post('/dron/land', function(request, response) {
       'Connection': 'close'
     });
     response.write('\n0');
+    response.end();
+    return;
+  }
+  console.log('land');
+  droneClient.land();
+  response.writeHead(200, {
+    'Content-Type': 'text/plain',
+    'Cache-Control': 'no-cache',
+    'Connection': 'close'
+  });
+  response.write('\n1');
+  response.end();
+});
+
+// Makes the drom land
+app.get('/dron/land', function(request, response) {
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n0');
+    response.end();
     return;
   }
   droneClient.land();
@@ -136,6 +166,7 @@ app.post('/dron/land', function(request, response) {
     'Connection': 'close'
   });
   response.write('\n1');
+  response.end();
 });
 
 // Makes the dron move
@@ -149,8 +180,10 @@ app.post('/dron/move', function(request, response) {
         'Connection': 'close'
       });
       response.write('\n0');
+      response.end();
       return;
     }
+    console.log(request.body.command + ':' + request.body.value)
     if (request.body.command == 'forwardbackward') {
       if (request.body.value > 0) {
         droneClient.front(request.body.value);
@@ -185,6 +218,7 @@ app.post('/dron/move', function(request, response) {
   } else {
     response.write('\n0');
   }
+  response.end();
 });
 
 // Sends drone's full state
@@ -197,6 +231,7 @@ app.get('/dron/state', function(request, response){
       'Connection': 'close'
     });
     response.write('\n0');
+    response.end();
     return;
   }
 
