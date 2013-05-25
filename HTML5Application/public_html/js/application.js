@@ -6,28 +6,37 @@
 
     //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
+    function addMouseEvent(_oObject, _sEventName, _fEventCallback) {
+        var _sTouchEventName,
+                _bMsSupport = window.navigator.msPointerEnabled,
+                _sType = _bMsSupport ? 'mstouch' : 'wktouch',
+                _fCallback = function(_oEvent) {
+            _oEvent.preventDefault();
+            _fEventCallback.apply(this, arguments);
+        };
+        switch (_sEventName) {
+            case 'mousedown':
+                _sTouchEventName = _bMsSupport ? 'MSPointerDown' : 'touchstart';
+                break;
+            case 'mousedown':
+                _sTouchEventName = _bMsSupport ? 'MSPointerUp' : 'touchend';
+                break;
+            case 'mousemove':
+                _sTouchEventName = _bMsSupport ? 'MSPointerMove' : 'touchmove';
+                break;
+            case 'mouseout':
+                if (_bMsSupport) {
+                    _sTouchEventName = 'MSPointerOut';
+                }
+        }
+        if (_sTouchEventName) {
+            $(_oObject).on(_sTouchEventName, {type: _sType}, _fCallback);
+        }
 
-    function addMouseEvent(_sEventName, _fEventCallback){
-       
-        if (window.navigator.msPointerEnabled) {
-                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
-                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
-                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
-                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+        $(_oObject).on(_sEventName, {type: 'mouse'}, _fCallback);
 
-            } else {
-                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
-                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
-                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
-            }
-
-            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
-            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
-            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
- 
-    };
+    }
+    ;
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         var dx = _nX - (tlX + brX) / 2;
         var dy = _nY - (tlY + brY) / 2;
@@ -209,7 +218,6 @@
             }.bind(this));
 
         },
-                        
         _addedObject: function() {
 
             //            MSPointerDown
@@ -227,23 +235,27 @@
 //Событие MSInertiaStart
 
             this.canvas.renderAll();
-            if (window.navigator.msPointerEnabled) {
-                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
-                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
-                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
-                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
-
-            } else {
-                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
-                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
-                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
-            }
-
-            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
-            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
-            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
+            addMouseEvent(this.getCanvasEl(), 'mousedown', this.mouseDown);
+            addMouseEvent(this.getCanvasEl(), 'mousemove', this.mouseMove);
+            addMouseEvent(this.getCanvasEl(), 'mouseup', this.mouseUp);
+            addMouseEvent(this.getCanvasEl(), 'mouseout', this.mouseUp);
+//            if (window.navigator.msPointerEnabled) {
+//                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
+//                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
+//                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
+//                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+//                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+//
+//            } else {
+//                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
+//                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
+//                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
+//            }
+//
+//            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
+//            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
+//            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
+//            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
@@ -328,6 +340,9 @@
     });
 
     var JoyStikApplication = createClass({
+        getCanvasEl: function() {
+            return this._canvas ? this._canvas.lowerCanvasEl : null;
+        },
         initialize: function() {
             this._robotApi = new Robot();
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
@@ -348,7 +363,11 @@
                 this._canvas.add(_Object);
 
             }.bind(this));
-            this._startStopButton = this._createStartStopButton();
+            this._startStopButton = this._createStartStopButton(function(_oEvent){
+                    if (isTarget(this, _oEvent)){
+                        alert('Click');
+                    } 
+                 });
             this._canvas.add(this._startStopButton);
             this._initEvents();
 
@@ -356,9 +375,13 @@
         _getPreferredStartStopSize: function() {
             return (this._getPreferredSideRadius() / 8 > 20) ? this._getPreferredSideRadius() / 8 : 20;
         },
-        _createStartStopButton: function() {
+        _createStartStopButton: function(_fCallBack) {
             var _nRadius = this._getPreferredStartStopSize();
             var _oCircle = new fabric.Circle({originY: 'bottom', radius: _nRadius, left: this._canvas.getCenter().left, top: this.getPreferredHeight() - 5, selectable: false, stroke: '0000CC', fill: '9900FF'});
+            if (typeof _fCallBack == 'function'){
+                 addMouseEvent(this.getCanvasEl(), 'mousedown', _fCallBack.bind(_oCircle));
+            }
+            //
             //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
 //            _oCircle.setGradient('fill', {
 //                x1: 4, y1: -2, r1: _nRadius / 10,
