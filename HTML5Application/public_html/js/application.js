@@ -371,10 +371,10 @@
                         _nCoordY = -(_nCurentPosY / _nFullY);
                 this._coordX = _nCoordX;
                 this._coordY = _nCoordY;
-                if (this._textField) {
-                    this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
-                    this._textField.bringToFront();
-                }
+//                if (this._textField) {
+//                    this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
+//                    this._textField.bringToFront();
+//                }
 
                 if (_bAnimate) {
                     _oShape.animate({left: _x, top: _y}, {
@@ -401,10 +401,10 @@
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
-            this._initTextField();
+            //this._initTextField();
             new SideManipulator({left: this._gerPreferredLeftManipulator1(), top: this._gerPreferredTopManipulator1(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
-                this._sideManipulator._textField = this._textField;
+                //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
 
             }.bind(this));

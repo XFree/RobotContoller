@@ -15,8 +15,8 @@ html {
     -ms-touch-action: none; /* Direct all pointer events to JavaScript code. */
 }
 html, body { 
-
-    width:100%; height:100%; } /* just to be sure these are full screen*/
+    width:100%; height:100%;
+} /* just to be sure these are full screen*/
 canvas { 
     display:block;
     -moz-user-select: -moz-none;
@@ -25,9 +25,16 @@ canvas {
     -webkit-user-select: none;
     -user-select: none;
 }
-#joystik {
+#joystik, #vid1 {
+    position: absolute;
+    left: 0;
+    top: 0;
     height: 100%;
     width: 100%;
+}
+
+#joystik {
+    z-index: 999;
 }
 
 /* Portrait */
