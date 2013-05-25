@@ -6,9 +6,6 @@
 
     //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
-    function getOrientation() {
-        return  window.matchMedia("(orientation: portrait)").matches ? 'portrait' : 'landscape';
-    }
 
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         var dx = _nX - (tlX + brX) / 2;
