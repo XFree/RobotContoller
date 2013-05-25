@@ -7,7 +7,7 @@ var _DRONE_IP_ADDRESS = '192.168.1.1';
 // Configuration
 app.configure(function(){
   app.use(express.bodyParser());
-  app.use(express.static('./project/NodejsServer/static'));
+  app.use(express.static('./project/HTML5Application/public_html'));
 });
 
 var oCurrentState = {};
