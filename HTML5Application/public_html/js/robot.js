@@ -89,7 +89,8 @@
         },
         
         /**
-         * @param {String} _sCommand "leftright"|"updown"|"rotate"
+         * Движение.
+         * @param {String} _sCommand "forwardbackward"|"leftright"|"updown"|"rotate"
          * @param {Number} _nValue -1..1
          */        
         move: function (_sCommand, _nValue) {
@@ -103,7 +104,12 @@
                 });
             }
         },
-                
+        
+        /**
+         * Приземление.
+         * @param {Function} _cbDone обработчик успешного взлета.
+         * @param {Function} _cbFail обработчик ошибки при взлете.
+         */        
         land: function(_cbDone, _cbFail) {
             if (this._initialized) {
                 $.ajax({
