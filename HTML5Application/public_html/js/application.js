@@ -9,7 +9,11 @@
     function addMouseEvent(_oObject, _sEventName, _fEventCallback) {
         var _sTouchEventName,
                 _bMsSupport = window.navigator.msPointerEnabled,
-                _sType = _bMsSupport ? 'mstouch' : 'wktouch';
+                _sType = _bMsSupport ? 'mstouch' : 'wktouch',
+                _fCallBack =  function(_oEvent) {
+                _oEvent.preventDefault();
+                _fEventCallback.apply(this, arguments);
+            };
         switch (_sEventName) {
             case 'mousedown':
                 _sTouchEventName = _bMsSupport ? 'MSPointerDown' : 'touchstart';
@@ -26,14 +30,11 @@
                 }
         }
         if (_sTouchEventName) {
-            $(_oObject).on(_sTouchEventName, {type: _sType}, function(_oEvent) {
-                _oEvent.preventDefault();
-                _fEventCallback.apply(this, arguments);
-            });
+            $(_oObject).on(_sTouchEventName, {type: _sType},_fCallBack);
         }
         ;
 
-        $(_oObject).on(_sEventName, {type: 'mouse'}, _fEventCallback);
+        $(_oObject).on(_sEventName, {type: 'mouse'}, _fCallBack);
 
     }
     ;
