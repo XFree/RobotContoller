@@ -19,6 +19,7 @@ app.get('/', function(request, response){
 // Sends drone state & image
 app.get('/dron/events', function(request, response){
   var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+  droneClient.config('general:navdata_demo', 'FALSE');
 
   // Push data through socket
   request.socket.setTimeout(Infinity);
@@ -39,16 +40,30 @@ app.get('/dron/events', function(request, response){
   // Subscribe to recieve telemetrics
   droneClient.on('navdata', function(navdata) {
     if (navdata.droneState && navdata.demo) {
-      oCurrentState.readystate = navdata.droneState.flying == 1 ? 'flying' : 'landed';
-      response.write('data:' + JSON.stringify(oCurrentState) +   '\n\n');
+      var bStateChanged = oCurrentState.droneState != navdata.droneState;
+      oCurrentState.droneState  = navdata.droneState;
+      oCurrentState.droneDemo   = navdata.demo;
+      // Sends update to client only if drone state has been changed
+      if (bStateChanged) {
+        response.write('data:' + JSON.stringify({
+          'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+          'img'         : oCurrentState.img
+        }) +   '\n\n');
+      }
     }
   });
 
   // Create PNG stream and subscribe for it's data
   var pngStream = droneClient.createPngStream();
   pngStream.on('data', function(pngImage) {
-    oCurrentState.img = new Buffer(pngImage, 'binary').toString('base64');
-    response.write('data:' + JSON.stringify(oCurrentState) +   '\n\n');
+    var img = 'data:image/png;base64,' + (new Buffer(pngImage, 'binary').toString('base64'));
+    if (img != oCurrentState.img) {
+      oCurrentState.img = img;
+      response.write('data:' + JSON.stringify({
+        'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+        'img'         : oCurrentState.img
+      }) +   '\n\n');
+    }
   });
 });
 
@@ -116,6 +131,35 @@ app.post('/dron/move', function(request, response) {
   } else {
     response.write('\n0');
   }
+});
+
+// Sends drone's full state
+app.get('/dron/state', function(request, response){
+  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+  droneClient.config('general:navdata_demo', 'FALSE');
+
+  // Push data through socket
+  request.socket.setTimeout(Infinity);
+
+  response.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  response.write('\n');
+
+  // Push telemetrics data via interval
+  var intervalId = setInterval(function() {
+    response.write('data:' + JSON.stringify({
+      'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+      'data'        : oCurrentState.droneDemo
+    }) +   '\n\n');  }, 100);
+
+  // Handle connection interrupt
+  request.on("close", function() {
+    clearInterval(intervalId);
+    response.end();
+  });
 });
 
 app.listen(1337, '127.0.0.1');
