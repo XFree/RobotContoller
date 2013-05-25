@@ -9,14 +9,14 @@ var Accel = createClass({
      * X координата по акселерометру
      */
     getX : function () {
-        return -_ay;
+        return _ay;
     },
 
     /**
      * Y координата по акселерометру
      */
     getY : function () {
-        return _ax;
+        return - _ax;
     },
 
     /**

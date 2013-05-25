@@ -404,7 +404,7 @@
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
-                if (1 || confirm("Use accelerometer?")) {
+                if (confirm("Use accelerometer?")) {
                     /* Using Accelerometer as input device for this manipulator */
                     _Object.setAccelMove(this._accel);
                 }
