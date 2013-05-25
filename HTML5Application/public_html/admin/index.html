@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Droid admin</title>
+    <meta charset="utf-8" />
+    <style type="text/css">
+        #tele {
+            width: 60px;
+            border: 1px solid red;
+        }
+    </style>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <script type="text/javascript">
+        window.onload = function() {
+            var source = new EventSource('/dron/state');
+            source.addEventListener('message', function(event) {
+                var s = '',
+                    d = new Date;
+                if (event.data) {
+                    s += '<table>';
+                    s += '<tr>';
+                    s += '<td>Timestamp:</td>';
+                    s += '<td>' + (d + '.' + d.getMilliseconds()) + '</td>';
+                    s += '</tr>';
+                    for (var i in event.data) {
+                       s += '<tr>';
+                       s += '<td>' + i + ':</td>';
+                       s += '<td>' + event.data[i] + '</td>';
+                       s += '</tr>';
+                    }
+                    s += '</table>';
+                }
+                document.getElementById('tele').innerHTML = s;
+            }, false);
+        }
+    </script>
+</head>
+<body>
+<div id="tele"></div>
+</body>
+</html>
