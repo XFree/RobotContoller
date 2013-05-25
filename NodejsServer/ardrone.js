@@ -1,5 +1,6 @@
 var http          = require('http'),
     express       = require('express'),
+    qrcode        = require('./qrcode'),
     app = express();
 
 var _DRONE_IP_ADDRESS = '192.168.1.1';
@@ -10,7 +11,10 @@ app.configure(function(){
   app.use(express.static('./project/HTML5Application/public_html'));
 });
 
-var oCurrentState = {};
+var oCurrentState = {
+  'recognitionText' : [],
+  'recognitionStatus' : 0
+};
 
 app.get('/', function(request, response){
   response.send('hello world');
@@ -75,6 +79,15 @@ app.get('/dron/events', function(request, response){
         'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
         'img'         : oCurrentState.img
       }) +   '\n\n');
+      if (!oCurrentState.recognitionStatus) {
+        oCurrentState.recognitionStatus = 1;
+        qrcode.recognize(img, function(sText){
+          oCurrentState.recognitionStatus = 0;
+          if (sText) {
+            oCurrentState.recognitionText.push(sText);
+          }
+        });
+      }
     }
   });
 });
