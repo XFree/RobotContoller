@@ -548,7 +548,7 @@
             switch(_sState) {
                 case 'flying':
                     if (!this._timer) {
-                        this._timer = setInterval(this._sendControls.bind(this), 100);
+                        this._timer = setInterval(this._sendControls.bind(this), 200);
                     }
                     break;
                 case 'landed':
