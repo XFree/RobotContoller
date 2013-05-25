@@ -11,9 +11,9 @@
                 _bMsSupport = window.navigator.msPointerEnabled,
                 _sType = _bMsSupport ? 'mstouch' : 'wktouch',
                 _fCallBack = function(_oEvent) {
-                    _oEvent.preventDefault();
-                    _fEventCallback.apply(this, arguments);
-                };
+            _oEvent.preventDefault();
+            _fEventCallback.apply(this, arguments);
+        };
         switch (_sEventName) {
             case 'mousedown':
                 _sTouchEventName = _bMsSupport ? 'MSPointerDown' : 'touchstart';
@@ -166,7 +166,8 @@
             }.bind(this));
         },
         setRadius: function(_nRadius) {
-            if (this.get('radius') == _nRadius) {
+            //FIXME: Есть проблема с перерисовкой, если объект не пересоздается
+            if (false && this.get('radius') == _nRadius) {
                 return;
             }
             fabric.Circle.prototype.setRadius.apply(this, arguments);
@@ -350,7 +351,7 @@
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
             this._initTextField();
-            new SideManipulator({left: 0, top: this._canvas.getCenter().top - this._getPreferredSideRadius(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
+            new SideManipulator({left: this._gerPreferredLeftManipulator1(), top: this._gerPreferredTopManipulator1(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator = _Object;
                 this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
@@ -358,7 +359,7 @@
             }.bind(this));
 
             //var t = this._getPreferredSideRadius();
-            new SideManipulator({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2, top: this._canvas.getCenter().top - this._getPreferredSideRadius(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
+            new SideManipulator({left: this._gerPreferredLeftManipulator2(), top: this._gerPreferredTopManipulator2(), originX: 'left', originY: 'top', radius: this._getPreferredSideRadius()}, function(_Object) {
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
@@ -375,6 +376,20 @@
         },
         _getPreferredStartStopSize: function() {
             return (this._getPreferredSideRadius() / 8 > 20) ? this._getPreferredSideRadius() / 8 : 20;
+        },
+        _gerPreferredTopManipulator1: function() {
+            return this.getPreferredHeight() < this.getPreferredWidth() ? this._canvas.getCenter().top - this._getPreferredSideRadius() : 0;
+        },
+        _gerPreferredTopManipulator2: function() {
+            return this.getPreferredHeight() < this.getPreferredWidth() ? this._gerPreferredTopManipulator1() : this.getPreferredHeight() - this._getPreferredSideRadius();
+        },
+        _gerPreferredLeftManipulator1: function() {
+            return  0;
+        },
+        
+        _gerPreferredLeftManipulator2: function() {
+            return  this.getPreferredHeight() < this.getPreferredWidth() ? this.getPreferredWidth() - (this._getPreferredSideRadius() * 2) : this._gerPreferredLeftManipulator1();
+
         },
         _createStartStopButton: function(_fCallBack) {
             var _nRadius = this._getPreferredStartStopSize();
@@ -425,14 +440,17 @@
             this._canvas.setHeight(this.getPreferredHeight());
             this._canvas.setWidth(this.getPreferredWidth());
 
-
             if (this._sideManipulator) {
-                this._sideManipulator.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
-                this._sideManipulator.setRadius(this._getPreferredSideRadius());
+                
+               this._sideManipulator.set({top: this._gerPreferredTopManipulator1(), left: this._gerPreferredLeftManipulator1()});
+               this._sideManipulator.setRadius(this._getPreferredSideRadius()); 
+               
             }
             if (this._sideManipulator2) {
-                this._sideManipulator2.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius(), left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2});
+                
+                this._sideManipulator2.set({top: this._gerPreferredTopManipulator2(), left: this._gerPreferredLeftManipulator2()});
                 this._sideManipulator2.setRadius(this._getPreferredSideRadius());
+                
             }
 
             this._canvas.clear();
@@ -441,7 +459,9 @@
                 this._startStopButton.set({left: this._canvas.getCenter().left, top: this.getPreferredHeight() - this._startStopButton.getHeight() - 5});
                 this._startStopButton.bringToFront();
             }
-            this._canvas.renderAll();
+           
+            setTimeout(this._canvas.renderAll.bind(this._canvas),1);
+            
         },
         getPreferredHeight: function() {
             return document.getElementById('joystik').clientHeight;
