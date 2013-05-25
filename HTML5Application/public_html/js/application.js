@@ -199,25 +199,15 @@
 
         },
         _setAccelerometerActivate: function(_bActivate) {
-            $(window).bind('devicemotion', function(_oJQEvent) {
+/*            $(window).bind('devicemotion', function(_oJQEvent) {
                 var _oOriginalEvent = _oJQEvent.originalEvent,
                         _oRotationRate = _oOriginalEvent.rotationRate,
                         _oAcceleration = _oOriginalEvent.acceleration,
                         _oAccelerationIncludingGravity = _oOriginalEvent.accelerationIncludingGravity,
-                        _aRotationRate = [];
-                for (var i in _oAccelerationIncludingGravity) {
-                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed());
-                }
-
-                if (this._textField) {
-                    this._textField.setText(_aRotationRate.join(" "));
-                    if (this._textField.canvas) {
-                        this._textField.canvas.renderAll();
-                    }
-                }
 
             }.bind(this));
-
+*/
+            alert("*****Accelerometer activated!");
         },
         _addedObject: function() {
 
@@ -307,6 +297,33 @@
                 }
             }
         },
+        timerMove: function() {
+/*            var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
+		if ( landscapeOrientation) {
+			vx = vx + ay;
+			vy = vy + ax;
+		} else {
+			vy = vy - ay;
+			vx = vx + ax;
+		}
+		vx = vx * 0.98;
+		vy = vy * 0.98;
+		y = parseInt(y + vy / 50);
+		x = parseInt(x + vx / 50);
+*/
+            var _accel = this._accel;
+            var _x = this._normalizeAxis(_accel.getX());
+            var _y = this._normalizeAxis(_accel.getY());
+
+            this.moveShape(this.getCircle(), _x, _y);
+        },
+        _normalizeAxis: function(_val) {
+            return 10 * Math.max(-1, Math.min(1, _val));
+        }.bind(this),
+        setAccelMove: function(_accel) {
+            this._accel = _accel;
+            this._accelMoveTimer = setInterval(this.timerMove.bind(this), 100);
+        },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
             if (_oShape) {
                 var _oCanvas = this.canvas,
@@ -346,6 +363,8 @@
         },
         initialize: function() {
             this._robotApi = new Robot();
+            this._accel = new Accel();
+            this._accel.start();
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
@@ -362,7 +381,14 @@
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
-
+                if (1 || confirm("Use accelerometer?")) {
+                    /* Using Accelerometer as input device for this manipulator */
+                    _Object.setAccelMove(this._accel);
+                }
+                else {
+                    /* Using touchscreen as input device for this manipulator */
+                    /* This is the default */
+                }
             }.bind(this));
             this._startStopButton = this._createStartStopButton(function(_oEvent) {
                 if (isTarget(this, _oEvent)) {
@@ -454,7 +480,7 @@
                 this._robotApi.connect(function() {
                     alert('Yeeee');
                 }, function() {
-                    alert('lost');
+                    /* alert('lost'); */
                 });
             }
         },
