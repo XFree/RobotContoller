@@ -414,7 +414,7 @@
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
-                if ((iphone|ipod|ipad|android|mobilesafari)/i.test(navigator.userAgent) && confirm("Use accelerometer?")) {
+                if (window.ondevicemotion && confirm("Use accelerometer?")) {
                     /* Using Accelerometer as input device for this manipulator */
                     _Object.setAccelMove(this._accel);
                 }
@@ -572,21 +572,21 @@
             }
         },
                 
-        _sendControls: function () {
-          this._robotApi.move('forwardbackward', this._sideManipulator.getY());
-          this._robotApi.move('leftright', this._sideManipulator.getX());
-          this._robotApi.move('updown', this._sideManipulator2.getY());
-          this._robotApi.move('rotate', this._sideManipulator2.getX());
-        },
-
 //        _sendControls: function () {
-//            this._robotApi.move({
-//                forwardbackward : this._sideManipulator.getY(),
-//                leftright : this._sideManipulator.getX(),
-//                updown : this._sideManipulator2.getY(),
-//                rotate : this._sideManipulator2.getX()
-//            });
+//          this._robotApi.move('forwardbackward', this._sideManipulator.getY());
+//          this._robotApi.move('leftright', this._sideManipulator.getX());
+//          this._robotApi.move('updown', this._sideManipulator2.getY());
+//          this._robotApi.move('rotate', this._sideManipulator2.getX());
 //        },
+
+        _sendControls: function () {
+            this._robotApi.move({
+                forwardbackward : this._sideManipulator.getY(),
+                leftright : this._sideManipulator.getX(),
+                updown : this._sideManipulator2.getY(),
+                rotate : this._sideManipulator2.getX()
+            });
+        },
                 
         _setStartStopButtonState: function (_sState) {
           if (this._startStopButtonState != _sState) {
