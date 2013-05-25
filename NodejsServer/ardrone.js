@@ -1,76 +1,96 @@
-var http          = require('http'),
-    express       = require('express'),
-    qrcode        = require('./qrcode'),
+var http    = require('http'),
+    express = require('express'),
+    qrcode  = require('./qrcode'),
+    drone   = require('./drone').drone,
     app = express();
-
 var _DRONE_IP_ADDRESS = '192.168.1.1';
 
 // Configuration
 app.configure(function(){
+  app.use(express.logger('dev'));
   app.use(express.bodyParser());
   app.use(express.static('./project/HTML5Application/public_html'));
 });
 
 var oCurrentState = {
-  'drone' : null,
-  getDrone : function() {
-    if (!this.drone) {
-      try {
-        var droneClient = require('ar-drone').createClient();
-        droneClient.config('general:navdata_demo', 'FALSE');
-        this.drone = droneClient;
-      } catch(e) {}
-    }
-    return this.drone;
-  },
   'qrcodes' : [],
   'recognitionStatus' : 0
 };
 
-// Sends drone state & image
-app.get('/dron/events', function(request, response){
-  var droneClient = oCurrentState.getDrone();
+function getDrone(_stream) {
+  var droneClient = drone.get();
   if (!droneClient) {
-    response.writeHead(503, {
+    _stream.writeHead(503, {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n0');
+    _stream.write('\n0');
+    _stream.end();
+    return null;
+  }
+  return droneClient;
+}
+
+function sendState(_stream, _drone) {
+  _stream.write('data:' + JSON.stringify({
+    'readystate'  : _drone.navdata ? _drone.navdata.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
+    'img'         : _drone.lastIimage
+  }) +   '\n\n');
+}
+
+// Sends drone state & image
+app.get('/dron/events', function(request, response){
+  var droneClient = getDrone(response, true);
+  if (!droneClient) {
+    sendState(response, {'lastImage':''});
     return;
   }
-
   // Push data through socket
   request.socket.setTimeout(Infinity);
-
   response.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
     'Connection': 'keep-alive'
   });
   response.write('\n');
-
   // Handle connection interrupt
   request.on("close", function() {
-    droneClient.stop();
+    var droneClient = getDrone(response);
+    if (droneClient) {
+      droneClient.stop();
+    }
     response.end();
   });
 
-  // Subscribe to recieve telemetrics
-  droneClient.on('navdata', function(navdata) {
-    if (navdata.droneState && navdata.demo) {
-      var bStateChanged = oCurrentState.droneState != navdata.droneState;
-      oCurrentState.droneState  = navdata.droneState;
-      oCurrentState.droneDemo   = navdata.demo;
-      // Sends update to client only if drone state has been changed
-      if (bStateChanged) {
-        response.write('data:' + JSON.stringify({
-          'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
-          'img'         : oCurrentState.img
-        }) +   '\n\n');
-      }
+  var prevState = null;
+  droneClient.listener.on('state', function(_DroneObject) {
+    if (prevState != _DroneObject.navdata.droneState.flying) {
+      sendState(response, _DroneObject);
     }
+    prevState = _DroneObject.navdata.droneState.flying
   });
+
+  droneClient.listener.on('image', function(_DroneObject) {
+    sendState(response, _DroneObject);
+  });
+
+
+  // Subscribe to recieve telemetrics
+//  droneClient.on('navdata', function(navdata) {
+//    if (navdata.droneState && navdata.demo) {
+//      var bStateChanged = oCurrentState.droneState != navdata.droneState;
+//      oCurrentState.droneState  = navdata.droneState;
+//      oCurrentState.droneDemo   = navdata.demo;
+//      // Sends update to client only if drone state has been changed
+//      if (bStateChanged) {
+//        response.write('data:' + JSON.stringify({
+//          'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
+//          'img'         : oCurrentState.img
+//        }) +   '\n\n');
+//      }
+//    }
+//  });
 
   // Create PNG stream and subscribe for it's data
 /*
@@ -81,7 +101,7 @@ app.get('/dron/events', function(request, response){
     if (img != oCurrentState.img) {
       oCurrentState.img = img;
       response.write('data:' + JSON.stringify({
-        'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+        'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
         'img'         : oCurrentState.img
       }) +   '\n\n');
       if (!oCurrentState.recognitionStatus) {
@@ -99,16 +119,9 @@ app.get('/dron/events', function(request, response){
 });
 
 // Take the dron off
-app.post('/dron/takeoff', function(request, response) {
-  var droneClient = oCurrentState.getDrone();
+function onTakeoff (request, response) {
+  var droneClient = getDrone(response);
   if (!droneClient) {
-    response.writeHead(503, {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'no-cache',
-      'Connection': 'close'
-    });
-    response.write('\n0');
-    response.end();
     return;
   }
   droneClient.takeoff(function(){
@@ -118,45 +131,16 @@ app.post('/dron/takeoff', function(request, response) {
       'Connection': 'close'
     });
     response.write('\n1');
-//    response.end();
+    response.end();
   });
-});
+}
+app.get('/dron/takeoff', onTakeoff);
+app.post('/dron/takeoff', onTakeoff);
 
 // Makes the drom land
-app.post('/dron/land', function(request, response) {
-  var droneClient = oCurrentState.getDrone();
+function onLand (request, response) {
+  var droneClient = getDrone(response);
   if (!droneClient) {
-    response.writeHead(503, {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'no-cache',
-      'Connection': 'close'
-    });
-    response.write('\n0');
-    response.end();
-    return;
-  }
-  console.log('land');
-  droneClient.land();
-  response.writeHead(200, {
-    'Content-Type': 'text/plain',
-    'Cache-Control': 'no-cache',
-    'Connection': 'close'
-  });
-  response.write('\n1');
-  response.end();
-});
-
-// Makes the drom land
-app.get('/dron/land', function(request, response) {
-  var droneClient = oCurrentState.getDrone();
-  if (!droneClient) {
-    response.writeHead(503, {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'no-cache',
-      'Connection': 'close'
-    });
-    response.write('\n0');
-    response.end();
     return;
   }
   droneClient.land();
@@ -167,48 +151,19 @@ app.get('/dron/land', function(request, response) {
   });
   response.write('\n1');
   response.end();
-});
+}
+app.get('/dron/land', onLand);
+app.post('/dron/land', onLand);
 
 // Makes the dron move
 app.post('/dron/move', function(request, response) {
   if (request.body.command && !isNaN(request.body.value)) {
-    var droneClient = oCurrentState.getDrone();
+    var droneClient = getDrone(response);
     if (!droneClient) {
-      response.writeHead(503, {
-        'Content-Type': 'text/plain',
-        'Cache-Control': 'no-cache',
-        'Connection': 'close'
-      });
-      response.write('\n0');
-      response.end();
       return;
     }
-    console.log(request.body.command + ':' + request.body.value)
-    if (request.body.command == 'forwardbackward') {
-      if (request.body.value > 0) {
-        droneClient.front(request.body.value);
-      } else {
-        droneClient.back(request.body.value);
-      }
-    } else if (request.body.command == 'leftright') {
-      if (request.body.value > 0) {
-        droneClient.right(request.body.value);
-      } else {
-        droneClient.left(request.body.value);
-      }
-    } else if (request.body.command == 'updown') {
-      if (request.body.value > 0) {
-        droneClient.up(request.body.value);
-      } else {
-        droneClient.down(request.body.value);
-      }
-    } else if (request.body.command == 'rotate') {
-      if (request.body.value > 0) {
-        droneClient.clockwise(request.body.value);
-      } else {
-        droneClient.counterClockwise(request.body.value)
-      }
-    }
+    droneClient.move(request.body.command, request.body.value);
+
     response.writeHead(200, {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache',
@@ -223,15 +178,8 @@ app.post('/dron/move', function(request, response) {
 
 // Sends drone's full state
 app.get('/dron/state', function(request, response){
-  var droneClient = oCurrentState.getDrone();
+  var droneClient = getDrone(response);
   if (!droneClient) {
-    response.writeHead(503, {
-      'Content-Type': 'text/plain',
-      'Cache-Control': 'no-cache',
-      'Connection': 'close'
-    });
-    response.write('\n0');
-    response.end();
     return;
   }
 
