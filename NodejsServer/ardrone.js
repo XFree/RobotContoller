@@ -13,7 +13,7 @@ app.configure(function(){
 
 var oCurrentState = {
   'drone' : null,
-  'getDrone' : function() {
+  getDrone : function() {
     if (!this.drone) {
       try {
         var droneClient = require('ar-drone').createClient();
@@ -21,7 +21,7 @@ var oCurrentState = {
         this.drone = droneClient;
       } catch(e) {}
     }
-    return this.dron;
+    return this.drone;
   },
   'qrcodes' : [],
   'recognitionStatus' : 0
@@ -49,6 +49,7 @@ app.get('/dron/events', function(request, response){
     'Connection': 'keep-alive'
   });
   response.write('\n');
+  return
 
   // Handle connection interrupt
   request.on("close", function() {
@@ -224,7 +225,7 @@ app.get('/dron/state', function(request, response){
   });
 });
 
-app.listen(1337, '127.0.0.1');
+app.listen(1337, '0.0.0.0');
 console.log('Server running at http://127.0.0.1:1337/');
 
 /*
