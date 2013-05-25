@@ -1,8 +1,9 @@
-    var Robot = createClass({
+   var createClass = fabric.util.createClass;
+   var Robot = createClass({
         connect: function (_cbConnectionOpen, _cbConnectionLost, _sImgSelector) {
             var _this = this;
             this._imgSelector = _sImgSelector;
-            if (!!EventSource) {
+            if (!!window.EventSource) {
                 this._source = new EventSource('/dron/events');
                 this._source.addEventListener('message', function(_oEvent) { _this.onServerMessage(_oEvent); }, false);
                 this._source.addEventListener('open',    function(_oEvent) { _this.onConnectionOpen(_oEvent); }, false);
@@ -12,7 +13,7 @@
             }
         },
                 
-        onServerMessage: function () {
+        onServerMessage: function (event) {
             $(_sImgSelector).attr("src", event.data);
             //$(_sImgSelector).attr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");            
         },
