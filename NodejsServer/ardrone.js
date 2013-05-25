@@ -1,5 +1,6 @@
 var http          = require('http'),
     express       = require('express'),
+    qrcode        = require('./qrcode'),
     app = express();
 
 var _DRONE_IP_ADDRESS = '192.168.1.1';
@@ -7,29 +8,35 @@ var _DRONE_IP_ADDRESS = '192.168.1.1';
 // Configuration
 app.configure(function(){
   app.use(express.bodyParser());
-  app.use(express.static('./project/NodejsServer/static'));
+  app.use(express.static('./project/HTML5Application/public_html'));
 });
 
-var oCurrentState = {};
-
-app.get('/', function(request, response){
-  response.send('hello world');
-});
+var oCurrentState = {
+  'drone' : null,
+  getDrone : function() {
+    if (!this.drone) {
+      try {
+        var droneClient = require('ar-drone').createClient();
+        droneClient.config('general:navdata_demo', 'FALSE');
+        this.drone = droneClient;
+      } catch(e) {}
+    }
+    return this.drone;
+  },
+  'qrcodes' : [],
+  'recognitionStatus' : 0
+};
 
 // Sends drone state & image
 app.get('/dron/events', function(request, response){
-//  var droneClient  = require('ar-drone').createClient({'ip':_DRONE_IP_ADDRESS});
-  var droneClient = null;
-  try {
-    var droneClient = require('ar-drone').createClient();
-    droneClient.config('general:navdata_demo', 'FALSE');
-  } catch(e) {
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
     response.writeHead(503, {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
     return;
   }
 
@@ -58,7 +65,7 @@ app.get('/dron/events', function(request, response){
       // Sends update to client only if drone state has been changed
       if (bStateChanged) {
         response.write('data:' + JSON.stringify({
-          'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
+          'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
           'img'         : oCurrentState.img
         }) +   '\n\n');
       }
@@ -66,8 +73,10 @@ app.get('/dron/events', function(request, response){
   });
 
   // Create PNG stream and subscribe for it's data
+/*
   var pngStream = droneClient.createPngStream();
   pngStream.on('data', function(pngImage) {
+    console.log('ondata');
     var img = 'data:image/png;base64,' + (new Buffer(pngImage, 'binary').toString('base64'));
     if (img != oCurrentState.img) {
       oCurrentState.img = img;
@@ -75,56 +84,106 @@ app.get('/dron/events', function(request, response){
         'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
         'img'         : oCurrentState.img
       }) +   '\n\n');
+      if (!oCurrentState.recognitionStatus) {
+        oCurrentState.recognitionStatus = 1;
+        qrcode.recognize(img, function(sText){
+          oCurrentState.recognitionStatus = 0;
+          if (sText) {
+            oCurrentState.qrcodes.push(sText);
+          }
+        });
+      }
     }
   });
+*/
 });
 
 // Take the dron off
 app.post('/dron/takeoff', function(request, response) {
-  var _bResult = false;
-  try {
-    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-    droneClient.takeoff();
-    _bResult = true;
-  } catch(e) {}
-  response.writeHead(_bResult ? 200 : 503, {
-    'Content-Type': 'text/plain',
-    'Cache-Control': 'no-cache',
-    'Connection': 'close'
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n0');
+    response.end();
+    return;
+  }
+  droneClient.takeoff(function(){
+    response.writeHead(200, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n1');
+//    response.end();
   });
-  response.write('\n1' + Number(_bResult));
 });
 
 // Makes the drom land
 app.post('/dron/land', function(request, response) {
-  var _bResult = false;
-  try {
-    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-    droneClient.land();
-    _bResult = true;
-  } catch(e) {}
-  response.writeHead(_bResult ? 200 : 503, {
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n0');
+    response.end();
+    return;
+  }
+  console.log('land');
+  droneClient.land();
+  response.writeHead(200, {
     'Content-Type': 'text/plain',
     'Cache-Control': 'no-cache',
     'Connection': 'close'
   });
-  response.write('\n1' + Number(_bResult));
+  response.write('\n1');
+  response.end();
+});
+
+// Makes the drom land
+app.get('/dron/land', function(request, response) {
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n0');
+    response.end();
+    return;
+  }
+  droneClient.land();
+  response.writeHead(200, {
+    'Content-Type': 'text/plain',
+    'Cache-Control': 'no-cache',
+    'Connection': 'close'
+  });
+  response.write('\n1');
+  response.end();
 });
 
 // Makes the dron move
 app.post('/dron/move', function(request, response) {
   if (request.body.command && !isNaN(request.body.value)) {
-    var droneClient = null;
-    try {
-      var droneClient = require('ar-drone').createClient({'ip':'127.0.0.1'});
-    } catch(e) {
+    var droneClient = oCurrentState.getDrone();
+    if (!droneClient) {
       response.writeHead(503, {
         'Content-Type': 'text/plain',
         'Cache-Control': 'no-cache',
         'Connection': 'close'
       });
-      response.write('\n' + e.message);
+      response.write('\n0');
+      response.end();
+      return;
     }
+    console.log(request.body.command + ':' + request.body.value)
     if (request.body.command == 'forwardbackward') {
       if (request.body.value > 0) {
         droneClient.front(request.body.value);
@@ -159,20 +218,20 @@ app.post('/dron/move', function(request, response) {
   } else {
     response.write('\n0');
   }
+  response.end();
 });
 
 // Sends drone's full state
 app.get('/dron/state', function(request, response){
-  try {
-    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-    droneClient.config('general:navdata_demo', 'FALSE');
-  } catch(e) {
+  var droneClient = oCurrentState.getDrone();
+  if (!droneClient) {
     response.writeHead(503, {
       'Content-Type': 'text/plain',
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
+    response.end();
     return;
   }
 
@@ -189,8 +248,9 @@ app.get('/dron/state', function(request, response){
   // Push telemetrics data via interval
   var intervalId = setInterval(function() {
     response.write('data:' + JSON.stringify({
-      'readystate'  : oCurrentState.droneState.flying == 1 ? 'flying' : 'landed',
-      'data'        : oCurrentState.droneDemo
+      'readystate'  : oCurrentState.droneState ? oCurrentState.droneState.flying == 1 ? 'flying' : 'landed' : 'unknown',
+      'data'        : oCurrentState.droneDemo,
+      'qrcodes'     : oCurrentState.qrcodes
     }) +   '\n\n');  }, 100);
 
   // Handle connection interrupt
@@ -200,7 +260,7 @@ app.get('/dron/state', function(request, response){
   });
 });
 
-app.listen(1337, '127.0.0.1');
+app.listen(1337, '0.0.0.0');
 console.log('Server running at http://127.0.0.1:1337/');
 
 /*
