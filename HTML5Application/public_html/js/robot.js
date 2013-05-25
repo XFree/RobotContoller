@@ -87,22 +87,23 @@
             }).done(_cbDone).fail(_cbFail);
         }
     },
+
     /**
      * Движение.
-     * @param {String} _sCommand "forwardbackward"|"leftright"|"updown"|"rotate"
-     * @param {Number} _nValue -1..1
+     * @param {Object} _oControls {forwardbackward:-1..1, leftright: -1..1, updown: -1..1, rotate: -1..1}
      */
-    move: function(_sCommand, _nValue) {
+    move: function(_oControls) {
         if (this._initialized) {
             $.ajax({
                 url: '/dron/move',
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({command: _sCommand, value: _nValue}),
+                data: JSON.stringify(_oControls),
                 dataType: 'json'
             });
         }
     },
+            
     /**
      * Приземление.
      * @param {Function} _cbDone обработчик успешного взлета.
