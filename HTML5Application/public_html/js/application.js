@@ -11,7 +11,11 @@
     }
 
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
-        return _nX > tlX && _nX < brX && _nY > tlY && _nY < brY;
+        var dx = _nX - (tlX + brX) / 2;
+        var dy = _nY - (tlY + brY) / 2;
+        var R = (tlY + brY) / 2;
+        return (dx * dx + dy * dy) <= R * R;
+        /*return _nX > tlX && _nX < brX && _nY > tlY && _nY < brY; */
     }
 
     function isTarget(_oObject, _oEvent) {
