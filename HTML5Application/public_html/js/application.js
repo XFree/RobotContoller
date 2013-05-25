@@ -575,13 +575,20 @@
         },
                 
         _sendControls: function () {
-            this._robotApi.move({
-                forwardbackward : this._sideManipulator.getY(),
-                leftright : this._sideManipulator.getX(),
-                updown : this._sideManipulator2.getY(),
-                rotate : this._sideManipulator2.getX()
-            });
+          this._robotApi.move('forwardbackward', this._sideManipulator.getY());
+          this._robotApi.move('leftright', this._sideManipulator.getX());
+          this._robotApi.move('updown', this._sideManipulator2.getY());
+          this._robotApi.move('rotate', this._sideManipulator2.getX());
         },
+
+//        _sendControls: function () {
+//            this._robotApi.move({
+//                forwardbackward : this._sideManipulator.getY(),
+//                leftright : this._sideManipulator.getX(),
+//                updown : this._sideManipulator2.getY(),
+//                rotate : this._sideManipulator2.getX()
+//            });
+//        },
                 
         _setStartStopButtonState: function (_sState) {
           if (this._startStopButtonState != _sState) {
