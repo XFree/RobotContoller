@@ -6,32 +6,42 @@
 
     //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
+    function addMouseEvent(_oObject, _sEventName, _fEventCallback) {
+        var _sTouchEventName,
+                _bMsSupport = window.navigator.msPointerEnabled,
+                _sType = _bMsSupport ? 'mstouch' : 'wktouch',
+                _fCallBack = function(_oEvent) {
+                    _oEvent.preventDefault();
+                    _fEventCallback.apply(this, arguments);
+                };
+        switch (_sEventName) {
+            case 'mousedown':
+                _sTouchEventName = _bMsSupport ? 'MSPointerDown' : 'touchstart';
+                break;
+            case 'mouseup':
+                _sTouchEventName = _bMsSupport ? 'MSPointerUp' : 'touchend';
+                break;
+            case 'mousemove':
+                _sTouchEventName = _bMsSupport ? 'MSPointerMove' : 'touchmove';
+                break;
+            case 'mouseout':
+                if (_bMsSupport) {
+                    _sTouchEventName = 'MSPointerOut';
+                }
+        }
+        if (_sTouchEventName) {
+            $(_oObject).on(_sTouchEventName, {type: _sType}, _fCallBack);
+        }
 
-    function addMouseEvent(_sEventName, _fEventCallback){
-       
-        if (window.navigator.msPointerEnabled) {
-                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
-                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
-                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
-                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
 
-            } else {
-                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
-                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
-                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
-            }
+        $(_oObject).on(_sEventName, {type: 'mouse'}, _fEventCallback);
 
-            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
-            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
-            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
- 
-    };
+    }
+    ;
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         var dx = _nX - (tlX + brX) / 2;
         var dy = _nY - (tlY + brY) / 2;
-        var R = (tlY + brY) / 2;
+        var R = (brY - tlY) / 2;
         return (dx * dx + dy * dy) <= R * R;
         /*return _nX > tlX && _nX < brX && _nY > tlY && _nY < brY; */
     }
@@ -40,8 +50,8 @@
         var _oOriginalEvent = _oEvent.originalEvent,
                 _nX, _nY,
                 _elementOffset = _oObject.canvas._offset,
-                _nOffsetObjectLeft = _elementOffset.left + _oObject.getLeft(),
-                _nOffsetObjectTop = _elementOffset.top + _oObject.getTop(),
+                _nOffsetObjectLeft = _elementOffset.left + _oObject.getLeft() - (_oObject.get('originX') == 'center' ? _oObject.getWidth() / 2 : 0),
+                _nOffsetObjectTop = _elementOffset.top + _oObject.getTop() - (_oObject.get('originY') == 'center' ? _oObject.getHeight() / 2 : 0),
                 _nOffsetObjectWidth = _nOffsetObjectLeft + _oObject.getWidth(),
                 _nOffsetObjectHeight = _nOffsetObjectTop + _oObject.getHeight();
         if (_oEvent.data.type == 'mstouch' || _oEvent.data.type == 'mouse') {
@@ -209,7 +219,6 @@
             }.bind(this));
 
         },
-                        
         _addedObject: function() {
 
             //            MSPointerDown
@@ -227,23 +236,27 @@
 //Событие MSInertiaStart
 
             this.canvas.renderAll();
-            if (window.navigator.msPointerEnabled) {
-                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
-                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
-                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
-                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
-                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
-
-            } else {
-                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
-                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
-                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
-            }
-
-            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
-            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
-            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
-            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
+            addMouseEvent(this.getCanvasEl(), 'mousedown', this.mouseDown);
+            addMouseEvent(this.getCanvasEl(), 'mousemove', this.mouseMove);
+            addMouseEvent(this.getCanvasEl(), 'mouseup', this.mouseUp);
+            addMouseEvent(this.getCanvasEl(), 'mouseout', this.mouseUp);
+//            if (window.navigator.msPointerEnabled) {
+//                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
+//                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
+//                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
+//                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+//                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+//
+//            } else {
+//                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
+//                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
+//                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
+//            }
+//
+//            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
+//            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
+//            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
+//            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
 
         },
         getCanvasEl: function() {
@@ -301,7 +314,7 @@
                         _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth() / 2,
                         _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
                         _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
-                        _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight()
+                        _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight();
                 var _nFullX = this.getWidth() / 2,
                         _nFullY = this.getHeight() / 2,
                         _nCurentPosX = _x - _x1,
@@ -328,6 +341,9 @@
     });
 
     var JoyStikApplication = createClass({
+        getCanvasEl: function() {
+            return this._canvas ? this._canvas.lowerCanvasEl : null;
+        },
         initialize: function() {
             this._robotApi = new Robot();
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
@@ -348,7 +364,11 @@
                 this._canvas.add(_Object);
 
             }.bind(this));
-            this._startStopButton = this._createStartStopButton();
+            this._startStopButton = this._createStartStopButton(function(_oEvent) {
+                if (isTarget(this, _oEvent)) {
+                    alert('Click');
+                }
+            });
             this._canvas.add(this._startStopButton);
             this._initEvents();
 
@@ -356,9 +376,13 @@
         _getPreferredStartStopSize: function() {
             return (this._getPreferredSideRadius() / 8 > 20) ? this._getPreferredSideRadius() / 8 : 20;
         },
-        _createStartStopButton: function() {
+        _createStartStopButton: function(_fCallBack) {
             var _nRadius = this._getPreferredStartStopSize();
-            var _oCircle = new fabric.Circle({originY: 'bottom', radius: _nRadius, left: this._canvas.getCenter().left, top: this.getPreferredHeight() - 5, selectable: false, stroke: '0000CC', fill: '9900FF'});
+            var _oCircle = new fabric.Circle({radius: _nRadius, left: this._canvas.getCenter().left, top: (this.getPreferredHeight() - _nRadius) - 5, selectable: false, stroke: '0000CC', fill: '9900FF'});
+            if (typeof _fCallBack == 'function') {
+                addMouseEvent(this.getCanvasEl(), 'mousedown', _fCallBack.bind(_oCircle));
+            }
+            //
             //this._circle = new fabric.Circle({radius: 100, left: 100, top: 100});
 //            _oCircle.setGradient('fill', {
 //                x1: 4, y1: -2, r1: _nRadius / 10,
@@ -403,18 +427,18 @@
 
 
             if (this._sideManipulator) {
+                this._sideManipulator.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
             if (this._sideManipulator2) {
-                this._sideManipulator2.set({left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2});
+                this._sideManipulator2.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius(), left: this.getPreferredWidth() - this._getPreferredSideRadius() * 2});
                 this._sideManipulator2.setRadius(this._getPreferredSideRadius());
             }
-
 
             this._canvas.clear();
             if (this._startStopButton) {
                 this._startStopButton.setRadius(this._getPreferredStartStopSize());
-                this._startStopButton.set({left: this._canvas.getCenter().left, top: this.getPreferredHeight() - 5});
+                this._startStopButton.set({left: this._canvas.getCenter().left, top: this.getPreferredHeight() - this._startStopButton.getHeight() - 5});
                 this._startStopButton.bringToFront();
             }
             this._canvas.renderAll();
