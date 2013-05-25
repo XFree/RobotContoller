@@ -8,16 +8,15 @@
         * @param {String} _cbImgShow обработчик отображения полученной с сервера картинки.
         */
         connect: function (_cbReadyState, _cbConnectionLost, _cbImgShow) {
-            var _this = this;
             this._cbImgShow = _cbImgShow;
             this._cbReadyState = _cbReadyState;
             this._cbConnectionLost = _cbConnectionLost;
             this._readyState = null;
             if (!!window.EventSource) {
                 this._source = new EventSource('/dron/events');
-                this._source.addEventListener('message', function(_oEvent) { _this._onServerMessage(_oEvent); }, false);
-                this._source.addEventListener('open',    function(_oEvent) { _this._onConnectionOpen(_oEvent); }, false);
-                this._source.addEventListener('error',   function(_oEvent) { _this._onConnectionLost(_oEvent); }, false);
+                this._source.addEventListener('message', this._onServerMessage.bind(this), false);
+                this._source.addEventListener('open',    this._onConnectionOpen.bind(this), false);
+                this._source.addEventListener('error',   this._onConnectionLost.bind(this), false);
             }
             return this._source;
         },
@@ -52,16 +51,16 @@
         /**
          * Обработчик ошибоки при соединении с сервером.
          */        
-        _onConnectionLost: function () {
+        _onConnectionLost: function (_oEvent) {
           this._initialized = false;
-          if (event.target.readyState === EventSource.CLOSED) {
+          if (_oEvent.target.readyState === EventSource.CLOSED) {
             this._cbConnectionLost('closed');
             this._cbReadyState = null;
             this._readyState = null;
             this._cbConnectionLost = null;
             this._source.close();
             //status.textContent = "Connection closed!";
-        } else if (event.target.readyState === EventSource.CONNECTING) {
+        } else if (_oEvent.target.readyState === EventSource.CONNECTING) {
             this._readyState = null;
             this._cbConnectionLost('connecting');
             //status.textContent = "Connection closed. Attempting to reconnect!";
