@@ -200,25 +200,15 @@
 
         },
         _setAccelerometerActivate: function(_bActivate) {
-            $(window).bind('devicemotion', function(_oJQEvent) {
+/*            $(window).bind('devicemotion', function(_oJQEvent) {
                 var _oOriginalEvent = _oJQEvent.originalEvent,
                         _oRotationRate = _oOriginalEvent.rotationRate,
                         _oAcceleration = _oOriginalEvent.acceleration,
                         _oAccelerationIncludingGravity = _oOriginalEvent.accelerationIncludingGravity,
-                        _aRotationRate = [];
-                for (var i in _oAccelerationIncludingGravity) {
-                    _aRotationRate.push(i + ': ' + _oAccelerationIncludingGravity[i].toFixed());
-                }
-
-                if (this._textField) {
-                    this._textField.setText(_aRotationRate.join(" "));
-                    if (this._textField.canvas) {
-                        this._textField.canvas.renderAll();
-                    }
-                }
 
             }.bind(this));
-
+*/
+            alert("*****Accelerometer activated!");
         },
         _addedObject: function() {
 
@@ -291,11 +281,13 @@
             }
         },
         _mouseMove: function(_oEvent) {
-            _oEvent.preventDefault();
-            var _oOriginalEvent = _oEvent.originalEvent,
-                    _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
-            if (_oCoords) {
-                this.moveShape(this.getCircle(), _oCoords.x, _oCoords.y);
+            if (!this._usingAccel) {
+                _oEvent.preventDefault();
+                var _oOriginalEvent = _oEvent.originalEvent,
+                _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
+                if (_oCoords) {
+                    this.moveShape(this.getCircle(), _oCoords.x, _oCoords.y);
+                }
             }
         },
         _mouseUp: function(_oEvent) {
@@ -308,7 +300,54 @@
                 }
             }
         },
+        timerMove: function() {
+/*            var landscapeOrientation = window.innerWidth/window.innerHeight > 1;
+		if ( landscapeOrientation) {
+			vx = vx + ay;
+			vy = vy + ax;
+		} else {
+			vy = vy - ay;
+			vx = vx + ax;
+		}
+		vx = vx * 0.98;
+		vy = vy * 0.98;
+		y = parseInt(y + vy / 50);
+		x = parseInt(x + vx / 50);
+*/
+            if (this._observe > 0) {
+                var _accel = this._accel;
+                var _x = this._normalizeAxis(_accel.getX() / 7);
+                var _y = this._normalizeAxis(_accel.getY() / 7);
 
+                var _oCanvas = this.canvas,
+                _oCanvasOffset = _oCanvas._offset,
+                _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth() / 2,
+                _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
+                _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
+                _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight();
+                var _nFullX = this.getWidth() / 2,
+                _nFullY = this.getHeight() / 2,
+                _nCurentPosX = _x - _x1,
+                _nCurentPosY = _y - _y1,
+                _nCoordX = (_nCurentPosX / _nFullX),
+                _nCoordY = -(_nCurentPosY / _nFullY);
+
+                var nCurPosX = _x * _nFullX;
+                var nCurPosY = - _y * _nFullY;
+                var x = nCurPosX + _x1;
+                var y = nCurPosY + _y1;
+
+                this.moveShape(this.getCircle(), x, y);
+            }
+        },
+        _normalizeAxis: function(_val) {
+            return  Math.max(-1, Math.min(1, _val));
+        }.bind(this),
+        setAccelMove: function(_accel) {
+            this._accel = _accel;
+            this._accelMoveTimer = setInterval(this.timerMove.bind(this), 10);
+            this._usingAccel = true;
+        },
         getX: function () {
             return this._coordX ? this._coordX : 0;
         },
@@ -316,7 +355,6 @@
         getY: function () {
             return this._coordY ? this._coordY : 0;
         },
-                
         moveShape: function(_oShape, _x, _y, _bAnimate) {
             if (_oShape) {
                 var _oCanvas = this.canvas,
@@ -358,6 +396,8 @@
         },
         initialize: function() {
             this._robotApi = new Robot();
+            this._accel = new Accel();
+            this._accel.start();
             this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
@@ -374,7 +414,14 @@
                 this._sideManipulator2 = _Object;
                 //this._sideManipulator._textField = this._textField;
                 this._canvas.add(_Object);
-
+                if (confirm("Use accelerometer?")) {
+                    /* Using Accelerometer as input device for this manipulator */
+                    _Object.setAccelMove(this._accel);
+                }
+                else {
+                    /* Using touchscreen as input device for this manipulator */
+                    /* This is the default */
+                }
             }.bind(this));
             this._startStopButton = this._createStartStopButton(function(_oEvent) {
                 if (isTarget(this, _oEvent)) {
