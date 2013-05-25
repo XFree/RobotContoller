@@ -4,7 +4,7 @@ var http          = require('http'),
 
 // Configuration
 app.configure(function(){
-//  app.use(express.bodyParser());
+  app.use(express.bodyParser());
 //  app.use(express.methodOverride());
 //  app.use(app.router);
   app.use(express.static('./project/NodejsServer/static'));
@@ -76,6 +76,46 @@ app.post('/dron/land', function(request, response) {
   });
   response.write('\n1');
 
+});
+
+// Makes the dron move
+app.post('/dron/move', function(request, response) {
+  if (request.body.command && !isNaN(request.body.value)) {
+    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    if (request.body.command == 'forwardbackward') {
+      if (request.body.value > 0) {
+        droneClient.front(request.body.value);
+      } else {
+        droneClient.back(request.body.value);
+      }
+    } else if (request.body.command == 'leftright') {
+      if (request.body.value > 0) {
+        droneClient.right(request.body.value);
+      } else {
+        droneClient.left(request.body.value);
+      }
+    } else if (request.body.command == 'updown') {
+      if (request.body.value > 0) {
+        droneClient.up(request.body.value);
+      } else {
+        droneClient.down(request.body.value);
+      }
+    } else if (request.body.command == 'rotate') {
+      if (request.body.value > 0) {
+        droneClient.clockwise(request.body.value);
+      } else {
+        droneClient.counterClockwise(request.body.value)
+      }
+    }
+    response.writeHead(200, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n1');
+  } else {
+    response.write('\n0');
+  }
 });
 
 app.listen(1337, '127.0.0.1');
