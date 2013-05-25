@@ -16,41 +16,7 @@ app.get('/', function(request, response){
   response.send('hello world');
 });
 
-app.get('/update-stream', function(request, response) {
-  // let request last as long as possible
-  request.socket.setTimeout(Infinity);
-
-  response.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  response.write('\n');
-
-  setInterval(function(){
-    console.log(aEvents);
-//    response.write('id: ' + Number(new Date() + '\n'));
-    response.write('data:' + JSON.stringify(aEvents) +   '\n\n');
-//    response.json(aEvents);
-  }, 1000);
-
-  // The 'close' event is fired when a user closes their browser window.
-  // In that situation we want to make sure our redis channel subscription
-  // is properly shut down to prevent memory leaks...and incorrect subscriber
-  // counts to the channel.
-  request.on("close", function() {
-    response.end();
-  });
-});
-
-app.get('/fire-event/test', function(request, response) {
-  var d = String(Number(new Date()));
-  aEvents.push(d);
-  response.writeHead(200, {'Content-Type': 'text/plain'});
-  response.write(d);
-  response.end();
-});
-
+// Sends drone state & image
 app.get('/dron/events', function(request, response){
   var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
 
@@ -86,8 +52,30 @@ app.get('/dron/events', function(request, response){
   });
 });
 
-app.get('/dron/takeoff', function(request, response){
-  response.send('hello world');
+// Take the dron off
+app.post('/dron/takeoff', function(request, response) {
+  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+  droneClient.takeoff();
+  response.writeHead(200, {
+    'Content-Type': 'text/plain',
+    'Cache-Control': 'no-cache',
+    'Connection': 'close'
+  });
+  response.write('\n1');
+
+});
+
+// Makes the drom land
+app.post('/dron/land', function(request, response) {
+  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+  droneClient.land();
+  response.writeHead(200, {
+    'Content-Type': 'text/plain',
+    'Cache-Control': 'no-cache',
+    'Connection': 'close'
+  });
+  response.write('\n1');
+
 });
 
 app.listen(1337, '127.0.0.1');
