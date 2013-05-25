@@ -145,32 +145,35 @@ drone.prototype.land = function () {
   self.client.land();
 }
 
-drone.prototype.move = function (_command, _value) {
+drone.prototype.move = function (_commands) {
   var self = this;
-  console.log('move: ' + _command + ':' + _value)
-  if (_command == 'forwardbackward') {
-    if (_value > 0) {
-      self.client.front(_value);
+  console.log('move: ' + _commands)
+  if ('forwardbackward' in _commands) {
+    if (_commands['forwardbackward'] > 0) {
+      self.client.front(_commands['forwardbackward']);
     } else {
-      self.client.back(_value);
+      self.client.back(_commands['forwardbackward']);
     }
-  } else if (_command == 'leftright') {
-    if (_value > 0) {
-      self.client.right(_value);
+  }
+  if ('leftright' in _commands) {
+    if (_commands['leftright'] > 0) {
+      self.client.right(_commands['leftright']);
     } else {
-      self.client.left(_value);
+      self.client.left(_commands['leftright']);
     }
-  } else if (_command == 'updown') {
-    if (_value > 0) {
-      self.client.up(_value);
+  }
+  if ('updown' in _commands) {
+    if (_commands['updown'] > 0) {
+      self.client.up(_commands['updown']);
     } else {
-      self.client.down(_value);
+      self.client.down(_commands['updown']);
     }
-  } else if (_command == 'rotate') {
-    if (_value > 0) {
-      self.client.clockwise(_value);
+  }
+  if ('rotate' in _commands) {
+    if (_commands['rotate'] > 0) {
+      self.client.clockwise(_commands['rotate']);
     } else {
-      self.client.counterClockwise(_value)
+      self.client.counterClockwise(_commands['rotate']);
     }
   }
 }
