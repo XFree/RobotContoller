@@ -7,6 +7,27 @@
     //var log = log4javascript.getDefaultLogger();
     var createClass = fabric.util.createClass;
 
+    function addMouseEvent(_sEventName, _fEventCallback){
+       
+        if (window.navigator.msPointerEnabled) {
+                //$(this.getCanvasEl()).on('MSPointerDown', {type: 'mstouch'}, this.mouseDown);
+                //$(this.getCanvasEl()).on('MSPointerMove', {type: 'mstouch'}, this.mouseMove);
+                //$(this.getCanvasEl()).on('MSPointerUp', {type: 'mstouch'}, this.mouseUp);
+                //$(this.getCanvasEl()).on('MSPointerCancel', {type: 'mstouch'}, this.mouseUp); 
+                //$(this.getCanvasEl()).on('MSPointerOut', {type: 'mstouch'}, this.mouseUp); 
+
+            } else {
+                $(this.getCanvasEl()).on('touchstart', {type: 'wktouch'}, this.mouseDown);
+                $(this.getCanvasEl()).on('touchmove', {type: 'wktouch'}, this.mouseMove);
+                $(this.getCanvasEl()).on('touchend', {type: 'wktouch'}, this.mouseUp);
+            }
+
+            $(this.getCanvasEl()).on('mousedown', {type: 'mouse'}, this.mouseDown);
+            $(this.getCanvasEl()).on('mousemove', {type: 'mouse'}, this.mouseMove);
+            $(this.getCanvasEl()).on('mouseup', {type: 'mouse'}, this.mouseUp);
+            $(this.getCanvasEl()).on('mouseout', {type: 'mouse'}, this.mouseUp);
+ 
+    };
     function isCoordsCont(tlX, tlY, brX, brY, _nX, _nY) {
         var dx = _nX - (tlX + brX) / 2;
         var dy = _nY - (tlY + brY) / 2;
@@ -188,6 +209,7 @@
             }.bind(this));
 
         },
+                        
         _addedObject: function() {
 
             //            MSPointerDown
@@ -360,6 +382,9 @@
             $(this._canvas.upperCanvasEl).on("contextmenu", function(e) {
                 e.preventDefault();
             }, false);
+            $(this._canvas.upperCanvasEl).on("contextmenu", function(e) {
+                e.preventDefault();
+            }, false);
             // Disables menu
         },
         _initTextField: function() {
@@ -404,7 +429,9 @@
             if (this._robotApi) {
                 this._robotApi.connect(function() {
                     alert('Yeeee');
-                })
+                }, function() {
+                    alert('lost');
+                });
             }
         },
         stop: function() {
