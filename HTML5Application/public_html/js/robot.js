@@ -5,11 +5,11 @@
         * Подключение к серверу управления дроном.
         * @param {Function} _cbReadyState обработчик изменения статуса.
         * @param {Function} _cbConnectionLost обработчик ошибки.
-        * @param {String} _sImgSelector селектор IMG для отображения полученной с сервера картинки.
+        * @param {String} _cbImgShow обработчик отображения полученной с сервера картинки.
         */
-        connect: function (_cbReadyState, _cbConnectionLost, _sImgSelector) {
+        connect: function (_cbReadyState, _cbConnectionLost, _cbImgShow) {
             var _this = this;
-            this._imgSelector = _sImgSelector;
+            this._cbImgShow = _cbImgShow;
             this._cbReadyState = _cbReadyState;
             this._cbConnectionLost = _cbConnectionLost;
             this._readyState = null;
@@ -36,7 +36,7 @@
                     }
                     break;
                 case 'img':
-                    $(_sImgSelector).attr("src", _oMessage.value);
+                    this._cbImgShow(_oMessage.value);
             }
             
             //$(_sImgSelector).attr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");            
