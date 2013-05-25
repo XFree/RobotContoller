@@ -80,7 +80,7 @@
             if (this._initialized) {
                 $.ajax({
                     url: '/dron/takeoff',
-                    type: 'PUT',
+                    type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({}),
                     dataType: 'json'
@@ -96,7 +96,7 @@
             if (this._initialized) {
                 $.ajax({
                     url: '/dron/move',
-                    type: 'PUT',
+                    type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ command : _sCommand, value: _nValue }),
                     dataType: 'json'
@@ -108,7 +108,7 @@
             if (this._initialized) {
                 $.ajax({
                     url: '/dron/land',
-                    type: 'PUT',
+                    type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({}),
                     dataType: 'json'
