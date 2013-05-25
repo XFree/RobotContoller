@@ -55,18 +55,22 @@
          */        
         _onConnectionLost: function (_oEvent) {
           this._initialized = false;
-          if (_oEvent.target.readyState === EventSource.CLOSED) {
-            this._cbConnectionLost('closed');
+          if (_oEvent.target.readyState === EventSource.CONNECTING) {
+            this._readyState = null;
+            this._cbConnectionLost('connecting');
+            //status.textContent = "Connection closed!";
+        } else if (_oEvent.target.readyState === EventSource.CLOSED) {
             this._cbReadyState = null;
             this._readyState = null;
             this._cbConnectionLost = null;
             this._source.close();
-            //status.textContent = "Connection closed!";
-        } else if (_oEvent.target.readyState === EventSource.CONNECTING) {
-            this._readyState = null;
-            this._cbConnectionLost('connecting');
+            this._cbConnectionLost('closed');
             //status.textContent = "Connection closed. Attempting to reconnect!";
         } else {
+            this._cbReadyState = null;
+            this._readyState = null;
+            this._cbConnectionLost = null;
+            this._source.close();
             this._cbConnectionLost('unknown');
             //status.textContent = "Connection closed. Unknown error!";
         }

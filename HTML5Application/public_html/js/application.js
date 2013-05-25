@@ -561,7 +561,9 @@
         },
                 
         _onConnectionLost: function (_bType) {
-            // TODO : заблокировать контролы?
+            if (_bType != 'connecting') {
+                this.start();
+            }
         },
                 
         _onImgChanged: function (_sImage) {
