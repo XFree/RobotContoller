@@ -35,7 +35,7 @@ function getDrone(_stream) {
 function sendState(_stream, _drone) {
   _stream.write('data:' + JSON.stringify({
     'readystate'  : _drone.navdata ? _drone.navdata.droneState.flying == 1 ? 'flying' : 'landed' : 'uninited',
-    'img'         : _drone.lastIimage
+    'img' : _drone.lastImage && 'data:image/png;base64,' + _drone.lastImage.toString('base64')
   }) +   '\n\n');
 }
 
@@ -157,12 +157,12 @@ app.post('/dron/land', onLand);
 
 // Makes the dron move
 app.post('/dron/move', function(request, response) {
-  if (request.body.command && !isNaN(request.body.value)) {
+  if (request.body) {
     var droneClient = getDrone(response);
     if (!droneClient) {
       return;
     }
-    droneClient.move(request.body.command, request.body.value);
+    droneClient.move(request.body);
 
     response.writeHead(200, {
       'Content-Type': 'text/plain',
