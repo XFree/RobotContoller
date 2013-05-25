@@ -331,8 +331,8 @@
                         _nCurentPosY = _y - _y1,
                         _nCoordX = (_nCurentPosX / _nFullX),
                         _nCoordY = -(_nCurentPosY / _nFullY);
-                this._coordX = nCoordX;
-                this._coordY = nCoordY;
+                this._coordX = _nCoordX;
+                this._coordY = _nCoordY;
                 if (this._textField) {
                     this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
                     this._textField.bringToFront();
@@ -388,7 +388,7 @@
                     }
                 }
             });
-            this._setStartStopButtonState(null);
+            this._setStartStopButtonState('uninited');
             this._canvas.add(this._startStopButton);
             this._initEvents();
 
