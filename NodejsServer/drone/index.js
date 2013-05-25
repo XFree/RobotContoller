@@ -147,33 +147,33 @@ drone.prototype.land = function () {
 
 drone.prototype.move = function (_commands) {
   var self = this;
-  console.log('move: ' + _commands)
+  console.log('move: %j', _commands)
   if ('forwardbackward' in _commands) {
     if (_commands['forwardbackward'] > 0) {
       self.client.front(_commands['forwardbackward']);
     } else {
-      self.client.back(_commands['forwardbackward']);
+      self.client.back(-_commands['forwardbackward']);
     }
   }
   if ('leftright' in _commands) {
     if (_commands['leftright'] > 0) {
       self.client.right(_commands['leftright']);
     } else {
-      self.client.left(_commands['leftright']);
+      self.client.left(-_commands['leftright']);
     }
   }
   if ('updown' in _commands) {
     if (_commands['updown'] > 0) {
       self.client.up(_commands['updown']);
     } else {
-      self.client.down(_commands['updown']);
+      self.client.down(-_commands['updown']);
     }
   }
   if ('rotate' in _commands) {
     if (_commands['rotate'] > 0) {
       self.client.clockwise(_commands['rotate']);
     } else {
-      self.client.counterClockwise(_commands['rotate']);
+      self.client.counterClockwise(-_commands['rotate']);
     }
   }
 }

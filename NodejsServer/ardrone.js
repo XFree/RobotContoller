@@ -65,10 +65,12 @@ app.get('/dron/events', function(request, response){
 
   var prevState = null;
   droneClient.listener.on('state', function(_DroneObject) {
-    if (prevState != _DroneObject.navdata.droneState.flying) {
-      sendState(response, _DroneObject);
+    if (_DroneObject.navdata.droneState) {
+      if (prevState != _DroneObject.navdata.droneState.flying) {
+        sendState(response, _DroneObject);
+      }
+      prevState = _DroneObject.navdata.droneState.flying
     }
-    prevState = _DroneObject.navdata.droneState.flying
   });
 
   droneClient.listener.on('image', function(_DroneObject) {
