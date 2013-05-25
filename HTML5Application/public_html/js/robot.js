@@ -26,7 +26,7 @@
          * @param {Event} _oEvent событие.
          */        
         _onServerMessage: function (_oEvent) {
-          var _oMessage  = JSON.parse(_oEvent.data);
+            var _oMessage  = JSON.parse(_oEvent.data);
           for (var k in _oMessage) {
             switch(k) {
               case 'readystate':
