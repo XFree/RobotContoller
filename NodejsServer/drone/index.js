@@ -193,6 +193,7 @@ drone.get = function() {
     try {
       var client = droneApi.createClient();
       client.config('general:navdata_demo', 'FALSE');
+      client.config('video:video_channel',  3);
       drone.instance = new drone(client);
       drone.instance.open();
       drone.instance.ready();
