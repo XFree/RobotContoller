@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+    <script>
+        window.onload = function() {
+            var source = new EventSource('/update-stream');
+            source.addEventListener('message', function(event) {
+                document.body.innerHTML = event.data;
+            }, false);
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>
