@@ -280,11 +280,13 @@
             }
         },
         _mouseMove: function(_oEvent) {
-            _oEvent.preventDefault();
-            var _oOriginalEvent = _oEvent.originalEvent,
-                    _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
-            if (_oCoords) {
-                this.moveShape(this.getCircle(), _oCoords.x, _oCoords.y);
+            if (!this._usingAccel) {
+                _oEvent.preventDefault();
+                var _oOriginalEvent = _oEvent.originalEvent,
+                _oCoords = this._observe > 0 ? this.isTarget(_oEvent) : null;
+                if (_oCoords) {
+                    this.moveShape(this.getCircle(), _oCoords.x, _oCoords.y);
+                }
             }
         },
         _mouseUp: function(_oEvent) {
@@ -311,18 +313,39 @@
 		y = parseInt(y + vy / 50);
 		x = parseInt(x + vx / 50);
 */
-            var _accel = this._accel;
-            var _x = this._normalizeAxis(_accel.getX());
-            var _y = this._normalizeAxis(_accel.getY());
+            if (this._observe > 0) {
+                var _accel = this._accel;
+                var _x = this._normalizeAxis(_accel.getX() / 7);
+                var _y = this._normalizeAxis(_accel.getY() / 7);
 
-            this.moveShape(this.getCircle(), _x, _y);
+                var _oCanvas = this.canvas,
+                _oCanvasOffset = _oCanvas._offset,
+                _x1 = _oCanvasOffset.left + this.getLeft() + this.getWidth() / 2,
+                _nXMax = _oCanvasOffset.left + this.getLeft() + this.getWidth(),
+                _y1 = _oCanvasOffset.top + this.getTop() + +this.getHeight() / 2,
+                _nYMax = _oCanvasOffset.top + this.getHeight() + this.getHeight();
+                var _nFullX = this.getWidth() / 2,
+                _nFullY = this.getHeight() / 2,
+                _nCurentPosX = _x - _x1,
+                _nCurentPosY = _y - _y1,
+                _nCoordX = (_nCurentPosX / _nFullX),
+                _nCoordY = -(_nCurentPosY / _nFullY);
+
+                var nCurPosX = _x * _nFullX;
+                var nCurPosY = - _y * _nFullY;
+                var x = nCurPosX + _x1;
+                var y = nCurPosY + _y1;
+
+                this.moveShape(this.getCircle(), x, y);
+            }
         },
         _normalizeAxis: function(_val) {
-            return 10 * Math.max(-1, Math.min(1, _val));
+            return  Math.max(-1, Math.min(1, _val));
         }.bind(this),
         setAccelMove: function(_accel) {
             this._accel = _accel;
-            this._accelMoveTimer = setInterval(this.timerMove.bind(this), 100);
+            this._accelMoveTimer = setInterval(this.timerMove.bind(this), 10);
+            this._usingAccel = true;
         },
         moveShape: function(_oShape, _x, _y, _bAnimate) {
             if (_oShape) {
