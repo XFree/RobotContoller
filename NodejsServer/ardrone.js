@@ -43,7 +43,6 @@ function sendState(_stream, _drone) {
 app.get('/dron/events', function(request, response){
   var droneClient = getDrone(response, true);
   if (!droneClient) {
-    sendState(response, {'lastImage':''});
     return;
   }
   // Push data through socket
