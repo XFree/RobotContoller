@@ -36,11 +36,11 @@
                 }
                 break;
               case 'img':
-                this._cbImgShow(_oMessage[k]);
+                if (_oMessage[k]) {
+                  this._cbImgShow(_oMessage[k]);
+                }
             }
           }
-
-            //$(_sImgSelector).attr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");            
         },
         
         /**
@@ -52,26 +52,30 @@
         
         /**
          * Обработчик ошибоки при соединении с сервером.
-         */        
+         */
         _onConnectionLost: function (_oEvent) {
           this._initialized = false;
-          if (_oEvent.target.readyState === EventSource.CLOSED) {
-            this._cbConnectionLost('closed');
+          if (_oEvent.target.readyState === EventSource.CONNECTING) {
+            this._readyState = null;
+            this._cbConnectionLost('connecting');
+            //status.textContent = "Connection closed!";
+          } else if (_oEvent.target.readyState === EventSource.CLOSED) {
             this._cbReadyState = null;
             this._readyState = null;
             this._cbConnectionLost = null;
             this._source.close();
-            //status.textContent = "Connection closed!";
-        } else if (_oEvent.target.readyState === EventSource.CONNECTING) {
-            this._readyState = null;
-            this._cbConnectionLost('connecting');
+            this._cbConnectionLost('closed');
             //status.textContent = "Connection closed. Attempting to reconnect!";
-        } else {
+          } else {
+            this._cbReadyState = null;
+            this._readyState = null;
+            this._cbConnectionLost = null;
+            this._source.close();
             this._cbConnectionLost('unknown');
             //status.textContent = "Connection closed. Unknown error!";
-        }
-    },
-    /**
+          }
+        },
+     /**
      * Взлет.
      * @param {Function} _cbDone обработчик успешного взлета.
      * @param {Function} _cbFail обработчик ошибки при взлете.
@@ -87,22 +91,21 @@
             }).done(_cbDone).fail(_cbFail);
         }
     },
-    /**
-     * Движение.
-     * @param {String} _sCommand "forwardbackward"|"leftright"|"updown"|"rotate"
-     * @param {Number} _nValue -1..1
-     */
-    move: function(_sCommand, _nValue) {
-        if (this._initialized) {
-            $.ajax({
-                url: '/dron/move',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({command: _sCommand, value: _nValue}),
-                dataType: 'json'
-            });
-        }
-    },
+     /**
+      * Движение.
+      * @param {Object} _oControls {forwardbackward:-1..1, leftright: -1..1, updown: -1..1, rotate: -1..1}
+      */
+     move: function(_oControls) {
+       if (this._initialized) {
+         $.ajax({
+           url: '/dron/move',
+           type: 'POST',
+           contentType: 'application/json',
+           data: JSON.stringify(_oControls),
+           dataType: 'json'
+         });
+       }
+     },
     /**
      * Приземление.
      * @param {Function} _cbDone обработчик успешного взлета.
