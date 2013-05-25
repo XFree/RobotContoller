@@ -1,4 +1,5 @@
    var createClass = fabric.util.createClass;
+   
    var Robot = createClass({
         connect: function (_cbConnectionOpen, _cbConnectionLost, _sImgSelector) {
             var _this = this;
