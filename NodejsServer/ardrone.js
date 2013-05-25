@@ -36,7 +36,7 @@ app.get('/dron/events', function(request, response){
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
     return;
   }
 
@@ -104,7 +104,7 @@ app.post('/dron/takeoff', function(request, response) {
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
     return;
   }
   droneClient.takeoff();
@@ -125,7 +125,7 @@ app.post('/dron/land', function(request, response) {
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
     return;
   }
   droneClient.land();
@@ -147,7 +147,7 @@ app.post('/dron/move', function(request, response) {
         'Cache-Control': 'no-cache',
         'Connection': 'close'
       });
-      response.write('\n' + e.message);
+      response.write('\n0');
       return;
     }
     if (request.body.command == 'forwardbackward') {
@@ -195,7 +195,7 @@ app.get('/dron/state', function(request, response){
       'Cache-Control': 'no-cache',
       'Connection': 'close'
     });
-    response.write('\n' + e.message);
+    response.write('\n0');
     return;
   }
 
