@@ -427,7 +427,7 @@
 
 
             if (this._sideManipulator) {
-                this._sideManipulator2.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
+                this._sideManipulator.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
             if (this._sideManipulator2) {
