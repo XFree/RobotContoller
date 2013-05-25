@@ -111,7 +111,7 @@
             return _oCircle;
         },
         _createBackgroundObject: function(_options, _fCallBack) {
-            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false,transparentCorners: true, opacity: 0.5, stroke: 'black'});
+            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false,transparentCorners: true, opacity: 0.7, stroke: 'black'});
             this._getBackgroundObject(_default).cloneAsImage(function(_oImg) {
                 //Сохранить в картинку
                 //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
@@ -314,7 +314,7 @@
 
     var JoyStikApplication = createClass({
         initialize: function() {
-            this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: '1.jpg'});
+            this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg'});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
             this._initTextField()
