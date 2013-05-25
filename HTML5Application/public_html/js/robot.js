@@ -27,19 +27,21 @@
          */        
         _onServerMessage: function (_oEvent) {
             var _oMessage  = JSON.parse(_oEvent.data);
-          for (var k in _oMessage) {
-            switch(k) {
-              case 'readystate':
-                if (this._cbReadyState && this._readyState != _oMessage[k]) {
-                  this._readyState = _oMessage[k];
-                  this._cbReadyState(this._readyState);
-                }
-                break;
-              case 'img':
-                this._cbImgShow(_oMessage[k]);
+            for (var k in _oMessage) {
+              switch(k) {
+                case 'readystate':
+                  if (this._cbReadyState && this._readyState != _oMessage[k]) {
+                    this._readyState = _oMessage[k];
+                    this._cbReadyState(this._readyState);
+                  }
+                  break;
+                case 'img':
+                  if (_oMessage[k]) {
+                      this._cbImgShow(_oMessage[k]);
+                  }
+              }
             }
-          }
-
+              
             //$(_sImgSelector).attr("src", "data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");            
         },
         
