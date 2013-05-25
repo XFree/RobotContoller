@@ -10,15 +10,15 @@
         var _sTouchEventName,
                 _bMsSupport = window.navigator.msPointerEnabled,
                 _sType = _bMsSupport ? 'mstouch' : 'wktouch',
-                _fCallBack =  function(_oEvent) {
-                _oEvent.preventDefault();
-                _fEventCallback.apply(this, arguments);
-            };
+                _fCallBack = function(_oEvent) {
+                    _oEvent.preventDefault();
+                    _fEventCallback.apply(this, arguments);
+                };
         switch (_sEventName) {
             case 'mousedown':
                 _sTouchEventName = _bMsSupport ? 'MSPointerDown' : 'touchstart';
                 break;
-            case 'mousedown':
+            case 'mouseup':
                 _sTouchEventName = _bMsSupport ? 'MSPointerUp' : 'touchend';
                 break;
             case 'mousemove':
@@ -30,11 +30,11 @@
                 }
         }
         if (_sTouchEventName) {
-            $(_oObject).on(_sTouchEventName, {type: _sType},_fCallBack);
+            $(_oObject).on(_sTouchEventName, {type: _sType}, _fCallBack);
         }
-        ;
 
-        $(_oObject).on(_sEventName, {type: 'mouse'}, _fCallBack);
+
+        $(_oObject).on(_sEventName, {type: 'mouse'}, _fEventCallback);
 
     }
     ;
@@ -50,7 +50,7 @@
         var _oOriginalEvent = _oEvent.originalEvent,
                 _nX, _nY,
                 _elementOffset = _oObject.canvas._offset,
-                _nOffsetObjectLeft = _elementOffset.left + _oObject.getLeft() - (_oObject.get('originX') == 'center' ? _oObject.getWidth() / 2 : 0) ,
+                _nOffsetObjectLeft = _elementOffset.left + _oObject.getLeft() - (_oObject.get('originX') == 'center' ? _oObject.getWidth() / 2 : 0),
                 _nOffsetObjectTop = _elementOffset.top + _oObject.getTop() - (_oObject.get('originY') == 'center' ? _oObject.getHeight() / 2 : 0),
                 _nOffsetObjectWidth = _nOffsetObjectLeft + _oObject.getWidth(),
                 _nOffsetObjectHeight = _nOffsetObjectTop + _oObject.getHeight();
@@ -427,7 +427,7 @@
 
 
             if (this._sideManipulator) {
-                this._sideManipulator2.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
+                this._sideManipulator.set({top: this._canvas.getCenter().top - this._getPreferredSideRadius()});
                 this._sideManipulator.setRadius(this._getPreferredSideRadius());
             }
             if (this._sideManipulator2) {
