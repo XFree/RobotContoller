@@ -2,11 +2,11 @@ var http          = require('http'),
     express       = require('express'),
     app = express();
 
+var _DRONE_IP_ADDRESS = '192.168.1.1';
+
 // Configuration
 app.configure(function(){
   app.use(express.bodyParser());
-//  app.use(express.methodOverride());
-//  app.use(app.router);
   app.use(express.static('./project/NodejsServer/static'));
 });
 
@@ -18,8 +18,20 @@ app.get('/', function(request, response){
 
 // Sends drone state & image
 app.get('/dron/events', function(request, response){
-  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-  droneClient.config('general:navdata_demo', 'FALSE');
+//  var droneClient  = require('ar-drone').createClient({'ip':_DRONE_IP_ADDRESS});
+  var droneClient = null;
+  try {
+    var droneClient = require('ar-drone').createClient();
+    droneClient.config('general:navdata_demo', 'FALSE');
+  } catch(e) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n' + e.message);
+    return;
+  }
 
   // Push data through socket
   request.socket.setTimeout(Infinity);
@@ -69,34 +81,50 @@ app.get('/dron/events', function(request, response){
 
 // Take the dron off
 app.post('/dron/takeoff', function(request, response) {
-  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-  droneClient.takeoff();
-  response.writeHead(200, {
+  var _bResult = false;
+  try {
+    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    droneClient.takeoff();
+    _bResult = true;
+  } catch(e) {}
+  response.writeHead(_bResult ? 200 : 503, {
     'Content-Type': 'text/plain',
     'Cache-Control': 'no-cache',
     'Connection': 'close'
   });
-  response.write('\n1');
-
+  response.write('\n1' + Number(_bResult));
 });
 
 // Makes the drom land
 app.post('/dron/land', function(request, response) {
-  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-  droneClient.land();
-  response.writeHead(200, {
+  var _bResult = false;
+  try {
+    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    droneClient.land();
+    _bResult = true;
+  } catch(e) {}
+  response.writeHead(_bResult ? 200 : 503, {
     'Content-Type': 'text/plain',
     'Cache-Control': 'no-cache',
     'Connection': 'close'
   });
-  response.write('\n1');
-
+  response.write('\n1' + Number(_bResult));
 });
 
 // Makes the dron move
 app.post('/dron/move', function(request, response) {
   if (request.body.command && !isNaN(request.body.value)) {
-    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    var droneClient = null;
+    try {
+      var droneClient = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    } catch(e) {
+      response.writeHead(503, {
+        'Content-Type': 'text/plain',
+        'Cache-Control': 'no-cache',
+        'Connection': 'close'
+      });
+      response.write('\n' + e.message);
+    }
     if (request.body.command == 'forwardbackward') {
       if (request.body.value > 0) {
         droneClient.front(request.body.value);
@@ -135,8 +163,18 @@ app.post('/dron/move', function(request, response) {
 
 // Sends drone's full state
 app.get('/dron/state', function(request, response){
-  var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
-  droneClient.config('general:navdata_demo', 'FALSE');
+  try {
+    var droneClient  = require('ar-drone').createClient({'ip':'127.0.0.1'});
+    droneClient.config('general:navdata_demo', 'FALSE');
+  } catch(e) {
+    response.writeHead(503, {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'no-cache',
+      'Connection': 'close'
+    });
+    response.write('\n' + e.message);
+    return;
+  }
 
   // Push data through socket
   request.socket.setTimeout(Infinity);
