@@ -424,9 +424,10 @@
                 }
             }.bind(this));
             this._startStopButton = this._createStartStopButton(function(_oEvent) {
-                if (isTarget(this, _oEvent)) {
+                if (isTarget(this._startStopButton, _oEvent)) {
                     switch (this._startStopButtonState) {
                     case 'flying':
+                      console.log(new Date() + ': land')
                         this._robotApi.land();
                         break;
                     case 'landed':
@@ -434,7 +435,7 @@
                         break;
                     }
                 }
-            });
+            }.bind(this));
             this._setStartStopButtonState('uninited');
             this._canvas.add(this._startStopButton);
             this._initEvents();
@@ -579,7 +580,7 @@
         },
                 
         _setStartStopButtonState: function (_sState) {
-            if (this._startStopButtonState != _sState) {
+          if (this._startStopButtonState != _sState) {
                 this._startStopButtonState = _sState;
                 switch (this._startStopButtonState) {
                     case 'flying':
@@ -591,6 +592,7 @@
                     default:
                         this._startStopButton.setFill("red");
                 }
+                this._canvas.renderAll();
             }   
         }
     });
