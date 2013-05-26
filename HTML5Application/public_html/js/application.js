@@ -569,6 +569,7 @@
         _onImgChanged: function (_sImage) {
             if (this._canvas) {
                 this._canvas.setBackgroundImage(_sImage);
+				        this._canvas.renderAll();
             }
         },
                 

@@ -2,34 +2,43 @@
 <html>
 <head>
     <title>Droid admin</title>
-    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <!--<meta http-equiv="Content-Type" content="text/html;charset=windows-1251"/>-->
     <style type="text/css">
-        #tele {
-            width: 60px;
-            border: 1px solid red;
+        * {
+            font-family: Verdana;
         }
     </style>
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <script type="text/javascript">
-        window.onload = function() {
+        window.onload = function () {
             var source = new EventSource('/dron/state');
-            source.addEventListener('message', function(event) {
-                var s = '',
-                    d = new Date;
+            source.addEventListener('message', function (event) {
+                var s = '', d = new Date;
+                var data = JSON.parse(event.data);
                 if (event.data) {
                     s += '<table>';
+                    s += '<tr>';
+                    s += '<td>State:</td>';
+                    s += '<td>' + data.readystate + '</td>';
+                    s += '</tr>';
                     s += '<tr>';
                     s += '<td>Timestamp:</td>';
                     s += '<td>' + (d + '.' + d.getMilliseconds()) + '</td>';
                     s += '</tr>';
-                    for (var i in event.data) {
-                       s += '<tr>';
-                       s += '<td>' + i + ':</td>';
-                       s += '<td>' + event.data[i] + '</td>';
-                       s += '</tr>';
+                    for (var i in data.demo) {
+                        s += '<tr>';
+                        s += '<td>Drone.' + i + ':</td>';
+                        s += '<td>' + data.demo[i] + '</td>';
+                        s += '</tr>';
                     }
+
+                    for (var i = 0, n = data.qrcodes.length; i < n; ++i) {
+                        s += '<tr>';
+                        s += '<td>QR-code ' + (i + 1) + '</td>';
+                        s += '<td>' + data.qrcodes[i] + '</td>';
+                        s += '</tr>';
+                    }
+
                     s += '</table>';
                 }
                 document.getElementById('tele').innerHTML = s;
