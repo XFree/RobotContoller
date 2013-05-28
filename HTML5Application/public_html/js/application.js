@@ -124,7 +124,6 @@
         },
         _getBackgroundObject: function(_options) {
             var _oCircle = new fabric.Circle(_options);
-
             _oCircle.setGradient('fill', {
                 x1: 0, y1: 0, r1: _oCircle.get('radius') / 10,
                 x2: 0, y2: 0, r2: _oCircle.get('radius'),
@@ -139,14 +138,15 @@
             return _oCircle;
         },
         _createBackgroundObject: function(_options, _fCallBack) {
-            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false, transparentCorners: true, opacity: 0.7, stroke: 'black'});
+            var _default = $.extend({}, _options, {originX: 'center', originY: 'center', selectable: false, transparentCorners: true, opacity: 1, stroke: 'black'});
             this._getBackgroundObject(_default).cloneAsImage(function(_oImg) {
                 //Сохранить в картинку
                 //window.open(document.getElementById("canvas").toDataURL("image/png"),"tfract_save");
                 _oImg.set({top: this.getTop(), left: this.getLeft(), perPixelTargetFind: true,
                     selectable: this.get('selectable'),
                     originX: this.get('originX'),
-                    originY: this.get('originY')});
+                    originY: this.get('originY'),
+                    opacity: 0});
 
                 if (this.canvas) {
                     this.canvas.remove(this._backgroundObject);
@@ -371,6 +371,14 @@
                         _nCoordY = -(_nCurentPosY / _nFullY);
                 this._coordX = _nCoordX;
                 this._coordY = _nCoordY;
+                if (this._backgroundObject){
+//                    if ((Math.abs(_nCoordX +  _nCoordY)).toFixed(1) > 0.5){
+//                        debugger;
+//                    }
+                    this._backgroundObject.set({opacity: (Math.abs(_nCoordX) +  Math.abs(_nCoordY) /2).toFixed(1)});
+                    //this._backgroundObject.canvas.renderAll();
+                }
+                
 //                if (this._textField) {
 //                    this._textField.set({text: String(_nCoordX.toFixed(2)) + ' ' + String(_nCoordY.toFixed(2))});
 //                    this._textField.bringToFront();
@@ -398,7 +406,7 @@
             this._robotApi = new Robot();
             this._accel = new Accel();
             this._accel.start();
-            this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false, backgroundImage: 'dron2.jpg', backgroundImageStretch: true});
+            this._canvas = new fabric.StaticCanvas('main_canvas', {selection: false});
             this.adjustSize();
             $(window).resize(this.adjustSize.bind(this));
             //this._initTextField();
@@ -567,8 +575,8 @@
         },
                 
         _onImgChanged: function (_sImage) {
-            if (this._canvas) {
-                this._canvas.setBackgroundImage(_sImage);
+            if (_sImage) {
+                $(back_layout).src(_sImage);
             }
         },
                 

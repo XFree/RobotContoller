@@ -25,13 +25,16 @@ canvas {
     -webkit-user-select: none;
     -user-select: none;
 }
-#joystik, #vid1 {
+#joystik, #back_layout {
+    position: absolute;
+    left: 0;
+    top: 0;
     height: 100%;
     width: 100%;
 }
 
-#joystik {
-    z-index: 999;
+#back_layout {
+    z-index: -1;
 }
 
 /* Portrait */

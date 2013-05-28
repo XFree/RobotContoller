@@ -49,6 +49,10 @@
         _onConnectionOpen: function () {
             this._initialized = true;
         },
+                
+        _cbConnectionLost: function(){
+    
+        },
         
         /**
          * Обработчик ошибоки при соединении с сервером.
